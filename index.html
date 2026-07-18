@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Model Builder Pro</title>
+    <style>
+        :root {
+            --bg-main: #0f0f10; --bg-panel: #18181b; --bg-elevated: #27272a;
+            --border: #2a2a2e; --accent: #3b82f6; --text-main: #f4f4f5;
+            --text-dim: #71717a; --danger: #ef4444; --x-color: #ef4444;
+            --y-color: #22c55e; --z-color: #3b82f6;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; 
+            background-color: var(--bg-main); font-family: 'Inter', system-ui, sans-serif; 
+            color: var(--text-main); user-select: none; -webkit-user-select: none; touch-action: none; }
+        #app { display: flex; width: 100vw; height: 100vh; }
+        #viewport { flex: 1; position: relative; overflow: hidden; min-width: 0; }
+        #viewport canvas { display: block; width: 100% !important; height: 100% !important; }
+        #top-bar { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; gap: 8px; pointer-events: none; }
+        #top-bar > * { pointer-events: auto; }
+        .tool-group { background: var(--bg-panel); border: 1px solid var(--border); padding: 6px; border-radius: 8px; display: flex; gap: 4px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        #center-tools { flex-wrap: wrap; justify-content: center; max-width: 60vw; }
+        .btn { background: transparent; color: var(--text-main); border: none; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 13px; transition: background 0.15s; min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .btn:hover { background: var(--bg-elevated); } .btn.active { background: var(--accent); color: white; }
+        .btn-danger { color: var(--danger); } .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
+        .btn-icon svg { width: 20px; height: 20px; stroke-width: 1.8; }
+        select.btn { appearance: none; padding: 0 28px 0 12px; background-color: var(--bg-elevated); background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2371717a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 8px top 50%; background-size: 8px auto; }
+        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+        #toggle-code-btn { background: #ffffff; color: #000000; border: 1px solid var(--border); border-radius: 8px; padding: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        #toggle-code-btn:hover { background: #e4e4e7; } #toggle-code-btn svg { width: 20px; height: 20px; stroke-width: 2; }
+        .draggable-panel { position: absolute; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 101; width: 260px; min-width: 220px; max-width: 400px; min-height: 150px; display: flex; flex-direction: column; overflow: hidden; }
+        .draggable-panel.hidden { display: none; }
+        .panel-header { padding: 12px 16px; background: var(--bg-panel); cursor: move; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 12px; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .panel-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .resize-handle { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--text-dim) 50%); opacity: 0.5; z-index: 102; }
+        .prop-group { margin-bottom: 20px; } .prop-group:last-child { margin-bottom: 0; }
+        .prop-label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; display: block; letter-spacing: 0.5px; font-weight: 600; }
+        .axis-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .axis-label { width: 14px; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+        .axis-label.x { color: var(--x-color); } .axis-label.y { color: var(--y-color); } .axis-label.z { color: var(--z-color); }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 24px; -webkit-appearance: none; appearance: none; background: var(--bg-elevated); border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--text-main); cursor: pointer; border: 2px solid var(--bg-panel); }
+        #color-picker-container { display: flex; flex-direction: column; gap: 8px; }
+        .color-slider { width: 100%; height: 20px; border-radius: 4px; appearance: none; cursor: pointer; background: transparent; -webkit-appearance: none; }
+        .color-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 8px; height: 24px; background: var(--text-main); border-radius: 2px; border: 1px solid var(--bg-main); cursor: pointer; }
+        #hue-slider { background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); }
+        #sat-slider { background: linear-gradient(to right, #808080, #ffffff); } #light-slider { background: linear-gradient(to right, #000000, #808080, #ffffff); } 
+        #code-panel { width: 0; min-width: 0; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s ease; }
+        #code-panel.visible { width: 380px; }
+        #code-header { padding: 12px 16px; background: var(--bg-panel); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+        #code-output { flex: 1; background: var(--bg-main); color: #d4d4d4; border: none; resize: none; padding: 16px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; outline: none; line-height: 1.5; user-select: text; -webkit-user-select: text; touch-action: auto; width: 100%; }
+        #file-input { display: none; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="viewport">
+        <div id="top-bar">
+            <div id="transform-modes" class="tool-group">
+                <button id="btn-translate" class="btn btn-icon active" onclick="setMode('translate')" title="Move"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18m0 0l-7-7m7 7l7-7"></path></svg></button>
+                <button id="btn-rotate" class="btn btn-icon" onclick="setMode('rotate')" title="Rotate"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                <button id="btn-scale" class="btn btn-icon" onclick="setMode('scale')" title="Scale"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+            </div>
+            <div id="center-tools" class="tool-group">
+                <select id="shape-select" class="btn" title="Select Shape"><option value="box">Box</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option><option value="cone">Cone</option><option value="torus">Torus</option><option value="torusKnot">Torus Knot</option><option value="dodecahedron">Dodecahedron</option><option value="icosahedron">Icosahedron</option><option value="octahedron">Octahedron</option><option value="tetrahedron">Tetrahedron</option></select>
+                <button class="btn btn-icon" onclick="addShape(document.getElementById('shape-select').value)" title="Add Shape"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
+                <button class="btn btn-icon" onclick="duplicateSelected()" title="Duplicate"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-8 5h8M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg></button>
+                <button class="btn btn-icon" onclick="groupSelected()" title="Group"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></button>
+                <button class="btn btn-icon" onclick="ungroupSelected()" title="Ungroup"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                <button class="btn btn-icon" onclick="focusCamera()" title="Focus Camera"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
+                <button class="btn btn-icon btn-danger" onclick="deleteSelected()" title="Delete"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+            </div>
+            <div id="right-tools" class="tool-group">
+                <button class="btn btn-icon" onclick="undo()" title="Undo"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>
+                <button class="btn btn-icon" onclick="redo()" title="Redo"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path></svg></button>
+                <div class="divider"></div>
+                <button class="btn btn-icon" onclick="exportScene()" title="Export JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
+                <button class="btn btn-icon" onclick="document.getElementById('file-input').click()" title="Import JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></button>
+                <button class="btn btn-icon" onclick="toggleFullscreen()" title="Fullscreen"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                <button id="toggle-code-btn" onclick="toggleCodePanel()" title="Toggle Code Panel"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg></button>
+                <input type="file" id="file-input" accept=".json" onchange="importScene(event)">
+            </div>
+        </div>
+        <div id="props-panel" class="draggable-panel hidden" style="top: 80px; left: 16px;">
+            <div class="panel-header">Properties</div>
+            <div class="panel-body">
+                <div class="prop-group"><span class="prop-label">Color (HSL)</span><div id="color-picker-container"><input type="range" min="0" max="360" value="0" class="color-slider" id="hue-slider" oninput="updateColor()"><input type="range" min="0" max="100" value="0" class="color-slider" id="sat-slider" oninput="updateColor()"><input type="range" min="0" max="100" value="50" class="color-slider" id="light-slider" oninput="updateColor()"></div></div>
+                <div class="prop-group"><span class="prop-label">Segments (Polycount)</span><input type="range" id="detail-slider" min="3" max="64" value="32" oninput="changeDetail(this.value)"></div>
+                <div class="prop-group"><span class="prop-label">Rockify (Flat Cuts)</span><input type="range" id="noise-slider" min="0" max="80" value="0" oninput="changeRock(this.value)"></div>
+                <div class="prop-group"><span class="prop-label">Material</span><div style="display: flex; gap: 8px; margin-top: 8px;"><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:4px; font-size:10px;">Roughness</small><input type="range" min="0" max="100" value="100" oninput="changeRoughness(this.value)"></div><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:4px; font-size:10px;">Metalness</small><input type="range" min="0" max="100" value="0" oninput="changeMetalness(this.value)"></div></div><button class="btn" style="width: 100%; margin-top: 12px; background: var(--bg-elevated); min-height: 36px;" onclick="toggleWireframe()">Toggle Wireframe</button></div>
+            </div><div class="resize-handle"></div>
+        </div>
+        <div id="transform-panel" class="draggable-panel hidden" style="top: 80px; right: 80px;">
+            <div class="panel-header">Transform</div>
+            <div class="panel-body">
+                <div class="prop-group"><span class="prop-label">Position</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-10" max="10" step="0.01" id="pos-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-10" max="10" step="0.01" id="pos-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-10" max="10" step="0.01" id="pos-z" oninput="updateTransform()"></div></div>
+                <div class="prop-group"><span class="prop-label">Rotation</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-z" oninput="updateTransform()"></div></div>
+                <div class="prop-group"><span class="prop-label">Scale</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="0.1" max="5" step="0.01" id="scale-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="0.1" max="5" step="0.01" id="scale-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="0.1" max="5" step="0.01" id="scale-z" oninput="updateTransform()"></div></div>
+                <button class="btn" style="width: 100%; margin-top: 10px; background: var(--bg-elevated); min-height: 36px;" onclick="resetTransform()">Reset Transform</button>
+            </div><div class="resize-handle"></div>
+        </div>
+    </div>
+    <div id="code-panel" class="visible">
+        <div id="code-header"><span>AI Export Code</span><button class="btn btn-icon" onclick="copyCode()" title="Copy Code" style="width: auto; padding: 0 8px; font-size: 11px; gap: 4px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg><span>Copy</span></button></div>
+        <textarea id="code-output" readonly></textarea>
+    </div>
+</div>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+
+let scene, camera, renderer, orbitControls, transformControls;
+let meshes = []; let groups = []; let selectedMesh = null;
+let history = []; let historyIndex = -1; const MAX_HISTORY = 50;
+let isRestoringState = false; 
+
+init(); animate(); initDraggablePanels(); initKeyboardShortcuts();
+
+function init() {
+    scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f0f10);
+    const grid = new THREE.GridHelper(20, 20, 0x27272a, 0x18181b); scene.add(grid);
+    const viewport = document.getElementById('viewport');
+    camera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 0.1, 1000);
+    camera.position.set(6, 5, 6);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio); viewport.appendChild(renderer.domElement);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); dirLight.position.set(5, 10, 5); scene.add(dirLight);
+    orbitControls = new OrbitControls(camera, renderer.domElement); orbitControls.enableDamping = true; orbitControls.dampingFactor = 0.1;
+    transformControls = new TransformControls(camera, renderer.domElement); transformControls.setSize(1.25); 
+    transformControls.addEventListener('dragging-changed', e => orbitControls.enabled = !e.value);
+    transformControls.addEventListener('objectChange', () => { if (selectedMesh) syncSliders(); updateCode(); });
+    scene.add(transformControls);
+    const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+    renderer.domElement.addEventListener('pointerdown', (event) => {
+        if (event.target !== renderer.domElement) return;
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const selectable = [...meshes, ...groups];
+        const intersects = raycaster.intersectObjects(selectable, true); 
+        if (intersects.length > 0) { let root = intersects[0].object; while(root.parent && !selectable.includes(root)) root = root.parent; selectObject(root); } 
+        else { deselectObject(); }
+    });
+
+    // FIX: Smart history tracking. Only save on pointerup if it happened on the canvas or panels, NOT on buttons.
+    const smartPushHistory = (e) => { if (!isRestoringState && (e.target.tagName === 'CANVAS' || e.target.tagName === 'INPUT' || e.target.classList.contains('axis-label'))) pushHistory(); };
+    renderer.domElement.addEventListener('pointerup', smartPushHistory);
+    document.querySelectorAll('.draggable-panel').forEach(p => p.addEventListener('pointerup', smartPushHistory));
+
+    window.addEventListener('resize', onWindowResize); onWindowResize(); 
+    try { const saved = localStorage.getItem('ai_builder_scene'); if (saved) { restoreScene(JSON.parse(saved)); pushHistory(); } } catch (e) { console.error("Failed to load save", e); }
+}
+
+function initDraggablePanels() {
+    document.querySelectorAll('.draggable-panel').forEach(panel => {
+        const header = panel.querySelector('.panel-header'); const resizeHandle = panel.querySelector('.resize-handle');
+        let isDragging = false, startX, startY, startLeft, startTop;
+        header.addEventListener('pointerdown', (e) => { isDragging = true; startX = e.clientX; startY = e.clientY; startLeft = panel.offsetLeft; startTop = panel.offsetTop; header.setPointerCapture(e.pointerId); panel.style.opacity = '0.8'; });
+        header.addEventListener('pointermove', (e) => { if (!isDragging) return; panel.style.left = `${startLeft + (e.clientX - startX)}px`; panel.style.top = `${startTop + (e.clientY - startY)}px`; panel.style.right = 'auto'; panel.style.bottom = 'auto'; });
+        header.addEventListener('pointerup', (e) => { isDragging = false; header.releasePointerCapture(e.pointerId); panel.style.opacity = '1'; });
+        if (resizeHandle) {
+            let isResizing = false, startW, startH, startRX, startRY;
+            resizeHandle.addEventListener('pointerdown', (e) => { isResizing = true; startW = panel.offsetWidth; startH = panel.offsetHeight; startRX = e.clientX; startRY = e.clientY; resizeHandle.setPointerCapture(e.pointerId); e.stopPropagation(); });
+            resizeHandle.addEventListener('pointermove', (e) => { if (!isResizing) return; panel.style.width = `${Math.max(220, startW + (e.clientX - startRX))}px`; panel.style.height = `${Math.max(150, startH + (e.clientY - startRY))}px`; });
+            resizeHandle.addEventListener('pointerup', (e) => { isResizing = false; resizeHandle.releasePointerCapture(e.pointerId); });
+        }
+    });
+}
+function initKeyboardShortcuts() { window.addEventListener('keydown', (e) => { if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) { e.preventDefault(); redo(); } }); }
+function pushHistory() { if (isRestoringState) return; const state = serializeScene(); history = history.slice(0, historyIndex + 1); history.push(state); if (history.length > MAX_HISTORY) history.shift(); historyIndex = history.length - 1; try { localStorage.setItem('ai_builder_scene', JSON.stringify(state)); } catch (e) {} }
+window.undo = function() { if (historyIndex > 0) { historyIndex--; restoreScene(history[historyIndex]); } }
+window.redo = function() { if (historyIndex < history.length - 1) { historyIndex++; restoreScene(history[historyIndex]); } }
+
+function serializeScene() { 
+    const allMeshes = [...meshes];
+    groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
+    return { 
+        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray() })), 
+        groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray() })) 
+    }; 
+}
+
+function restoreScene(state) { 
+    isRestoringState = true; 
+    meshes.forEach(m => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); }); 
+    groups.forEach(g => scene.remove(g)); 
+    meshes = []; groups = []; deselectObject(); 
+    
+    const tempMeshes = [];
+    state.meshes.forEach(mData => {
+        let geo;
+        if (mData.rockAmount > 0 && mData.rockPoints) { geo = new ConvexGeometry(mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]))); } 
+        else { geo = createGeometry(mData.type, mData.detail); }
+        const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe });
+        const m = new THREE.Mesh(geo, mat);
+        m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
+        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null };
+        tempMeshes.push(m);
+    });
+
+    tempMeshes.forEach((m, i) => { if (!state.meshes[i].isGrouped) { scene.add(m); meshes.push(m); } });
+    state.groups.forEach(gData => { const g = new THREE.Group(); g.userData.isGroup = true; gData.children.forEach(idx => { g.attach(tempMeshes[idx]); tempMeshes[idx].userData.isGrouped = true; }); g.position.fromArray(gData.position); g.rotation.fromArray(gData.rotation); g.scale.fromArray(gData.scale); scene.add(g); groups.push(g); });
+
+    isRestoringState = false; updateCode(); 
+}
+
+window.exportScene = function() { const dataStr = JSON.stringify(serializeScene(), null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "ai_model_scene.json"; a.click(); URL.revokeObjectURL(url); }
+window.importScene = function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { restoreScene(JSON.parse(e.target.result)); pushHistory(); } catch (err) { alert("Invalid file"); } }; reader.readAsText(file); event.target.value = ""; }
+window.toggleFullscreen = function() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); setTimeout(onWindowResize, 100); }
+window.focusCamera = function() { if (meshes.length === 0 && groups.length === 0) { camera.position.set(6, 5, 6); orbitControls.target.set(0, 0, 0); orbitControls.update(); return; } const box = new THREE.Box3(); [...meshes, ...groups].forEach(obj => box.expandByObject(obj)); const center = box.getCenter(new THREE.Vector3()); const size = box.getSize(new THREE.Vector3()); const maxDim = Math.max(size.x, size.y, size.z); const fov = camera.fov * (Math.PI / 180); let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)); cameraZ *= 1.8; camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ); orbitControls.target.set(center.x, center.y, center.z); orbitControls.update(); }
+window.addShape = function(type) { const material = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 1, metalness: 0 }); const mesh = new THREE.Mesh(createGeometry(type, 32), material); mesh.position.y = 0.5; mesh.userData = { shapeType: type, detail: 32, rockAmount: 0, isGrouped: false, rockPoints: null }; scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode(); }
+function createGeometry(type, detail) { const d = Math.max(3, Math.floor(detail)); const polyDetail = Math.max(0, Math.floor(d / 16)); switch(type) { case 'box': return new THREE.BoxGeometry(1, 1, 1, d, d, d); case 'sphere': return new THREE.SphereGeometry(0.5, d, d); case 'cylinder': return new THREE.CylinderGeometry(0.5, 0.5, 1, d); case 'cone': return new THREE.ConeGeometry(0.5, 1, d); case 'torus': return new THREE.TorusGeometry(0.4, 0.15, Math.max(Math.floor(d/2), 3), d); case 'torusKnot': return new THREE.TorusKnotGeometry(0.3, 0.1, Math.max(d*2, 8), Math.max(Math.floor(d/2), 3)); case 'dodecahedron': return new THREE.DodecahedronGeometry(0.5, polyDetail); case 'icosahedron': return new THREE.IcosahedronGeometry(0.5, polyDetail); case 'octahedron': return new THREE.OctahedronGeometry(0.5, polyDetail); case 'tetrahedron': return new THREE.TetrahedronGeometry(0.5, polyDetail); } }
+function createRockGeometry(type, detail, rockAmount) { const baseDetail = type === 'box' ? Math.max(detail, 4) : Math.max(detail, 8); const baseGeo = createGeometry(type, baseDetail); const pos = baseGeo.attributes.position; const points = []; const tempV = new THREE.Vector3(); for (let i = 0; i < pos.count; i++) { tempV.fromBufferAttribute(pos, i); if (Math.random() < rockAmount / 100) tempV.multiplyScalar(Math.random() * 0.6 + 0.2); points.push(tempV.clone()); } const rockGeo = new ConvexGeometry(points); baseGeo.dispose(); return { geo: rockGeo, points: points }; }
+
+window.changeDetail = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { const detail = parseInt(val); selectedMesh.userData.detail = detail; selectedMesh.geometry.dispose(); if (selectedMesh.userData.rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, detail, selectedMesh.userData.rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, detail); } updateCode(); } }
+window.changeRock = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { const rockAmount = parseInt(val); selectedMesh.userData.rockAmount = rockAmount; selectedMesh.geometry.dispose(); if (rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail, rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail); selectedMesh.userData.rockPoints = null; } updateCode(); } }
+window.changeRoughness = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.roughness = val / 100; updateCode(); } }
+window.changeMetalness = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.metalness = val / 100; updateCode(); } }
+window.updateColor = function() { if (selectedMesh && meshes.includes(selectedMesh)) { const h = document.getElementById('hue-slider').value, s = document.getElementById('sat-slider').value, l = document.getElementById('light-slider').value; document.getElementById('sat-slider').style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`; document.getElementById('light-slider').style.background = `linear-gradient(to right, hsl(${h}, ${s}%, 0%), hsl(${h}, ${s}%, 50%), hsl(${h}, ${s}%, 100%))`; selectedMesh.material.color.setHSL(h/360, s/100, l/100); updateCode(); } }
+window.toggleWireframe = function() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; updateCode(); } }
+window.updateTransform = function() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); updateCode(); } }
+function syncSliders() { if (!selectedMesh) return; document.getElementById('pos-x').value = selectedMesh.position.x; document.getElementById('pos-y').value = selectedMesh.position.y; document.getElementById('pos-z').value = selectedMesh.position.z; document.getElementById('rot-x').value = selectedMesh.rotation.x; document.getElementById('rot-y').value = selectedMesh.rotation.y; document.getElementById('rot-z').value = selectedMesh.rotation.z; document.getElementById('scale-x').value = selectedMesh.scale.x; document.getElementById('scale-y').value = selectedMesh.scale.y; document.getElementById('scale-z').value = selectedMesh.scale.z; }
+window.resetTransform = function() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); updateCode(); pushHistory(); } }
+
+window.duplicateSelected = function() {
+    if (!selectedMesh) return;
+    if (groups.includes(selectedMesh)) {
+        const orig = selectedMesh;
+        const newGroup = new THREE.Group();
+        newGroup.userData.isGroup = true;
+        orig.children.forEach(child => {
+            const newMesh = child.clone(); newMesh.material = child.material.clone();
+            newMesh.userData = JSON.parse(JSON.stringify(child.userData));
+            if (child.userData.rockPoints) newMesh.userData.rockPoints = child.userData.rockPoints.map(v => v.clone());
+            newGroup.attach(newMesh);
+        });
+        newGroup.position.x += 1.5; scene.add(newGroup); groups.push(newGroup);
+        selectObject(newGroup);
+    } else if (meshes.includes(selectedMesh)) {
+        const orig = selectedMesh; const newMesh = orig.clone(); newMesh.material = orig.material.clone(); newMesh.position.x += 1.5; 
+        newMesh.userData = JSON.parse(JSON.stringify(orig.userData)); if (orig.userData.rockPoints) newMesh.userData.rockPoints = orig.userData.rockPoints.map(v => v.clone());
+        scene.add(newMesh); meshes.push(newMesh); selectObject(newMesh);
+    }
+    pushHistory(); updateCode();
+}
+
+window.groupSelected = function() { 
+    if (meshes.length === 0) return; 
+    const group = new THREE.Group(); group.userData.isGroup = true; 
+    const toGroup = meshes.filter(m => !m.userData.isGrouped); 
+    if (toGroup.length === 0) return; 
+    toGroup.forEach(m => { group.attach(m); m.userData.isGrouped = true; }); 
+    meshes = meshes.filter(m => !toGroup.includes(m)); // REMOVE from main array so they can't be selected individually!
+    groups.push(group); scene.add(group); selectObject(group); pushHistory(); updateCode(); 
+}
+
+window.ungroupSelected = function() {
+    if (!selectedMesh || !groups.includes(selectedMesh)) return;
+    const group = selectedMesh; const children = [...group.children];
+    children.forEach(child => { scene.attach(child); child.userData.isGrouped = false; meshes.push(child); }); // ADD back to main array
+    scene.remove(group); groups = groups.filter(g => g !== group);
+    if (children.length > 0) selectObject(children[0]); else deselectObject();
+    pushHistory(); updateCode();
+}
+
+window.deleteSelected = function() {
+    if (!selectedMesh) return;
+    if (groups.includes(selectedMesh)) { 
+        selectedMesh.children.forEach(child => { scene.remove(child); child.geometry.dispose(); child.material.dispose(); }); 
+        scene.remove(selectedMesh); groups = groups.filter(g => g !== selectedMesh); 
+    } else if (meshes.includes(selectedMesh)) { 
+        scene.remove(selectedMesh); selectedMesh.geometry.dispose(); selectedMesh.material.dispose(); meshes = meshes.filter(m => m !== selectedMesh); 
+    }
+    transformControls.detach(); selectedMesh = null;
+    document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden');
+    pushHistory(); updateCode();
+}
+window.setMode = function(mode) { transformControls.setMode(mode); document.querySelectorAll('#transform-modes .btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`btn-${mode}`).classList.add('active'); }
+function selectObject(obj) { selectedMesh = obj; transformControls.attach(obj); document.getElementById('transform-panel').classList.remove('hidden'); syncSliders(); if (meshes.includes(obj)) { document.getElementById('props-panel').classList.remove('hidden'); const color = obj.material.color.getHSL({}); document.getElementById('hue-slider').value = color.h * 360; document.getElementById('sat-slider').value = color.s * 100; document.getElementById('light-slider').value = color.l * 100; document.getElementById('detail-slider').value = obj.userData.detail; document.getElementById('noise-slider').value = obj.userData.rockAmount; updateColor(); } else { document.getElementById('props-panel').classList.add('hidden'); } }
+function deselectObject() { selectedMesh = null; transformControls.detach(); document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden'); }
+window.toggleCodePanel = function() { document.getElementById('code-panel').classList.toggle('visible'); onWindowResize(); }
+window.copyCode = function() { const ct = document.getElementById('code-output'); ct.select(); document.execCommand('copy'); const b = document.querySelector('#code-header .btn span'); b.innerText='Copied!'; setTimeout(()=>b.innerText='Copy',1500); }
+
+// MASSIVELY OPTIMIZED CODE GENERATOR (Uses flat arrays instead of Vector3 objects)
+function updateCode() {
+    let code = `// Three.js Model Code\n// Generated by AI Model Builder\n`;
+    code += `import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';\n`;
+    code += `const V=(a)=>{let r=[];for(let i=0;i<a.length;i+=3)r.push(new THREE.Vector3(a[i],a[i+1],a[i+2]));return r;}\n\n`;
+    if (meshes.length === 0 && groups.length === 0) { code += `// No objects created yet.`; document.getElementById('code-output').value = code; return; }
+
+    const allMeshes = [...meshes];
+    groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
+
+    const geoCache = {}; const matCache = {}; let meshCode = "";
+    allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
+
+    let groupCode = "";
+    if (meshes.length > 0) {
+        groupCode += `const auto_group = new THREE.Group();\n`;
+        groupCode += `auto_group.add(${meshes.map(m => `mesh_${allMeshes.indexOf(m)}`).join(",")});\n`;
+        groupCode += `scene.add(auto_group);\n\n`;
+    }
+    groups.forEach((g, gi) => {
+        if (g.children.length === 0) return; 
+        groupCode += `const group_${gi} = new THREE.Group();\n`;
+        groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`;
+        const p = g.position, r = g.rotation, s = g.scale;
+        groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`;
+        groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`;
+        groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`;
+        groupCode += `scene.add(group_${gi});\n\n`;
+    });
+
+    let finalCode = code; Object.values(geoCache).forEach(c => finalCode += c.code); finalCode += "\n"; Object.values(matCache).forEach(c => finalCode += c.code); finalCode += "\n"; finalCode += meshCode; finalCode += groupCode;
+    document.getElementById('code-output').value = finalCode;
+}
+
+function getCacheVars(mesh, index, geoCache, matCache) {
+    let geoSig, geoVar, geoCode;
+    if (mesh.userData.rockAmount > 0 && mesh.userData.rockPoints) {
+        geoSig = mesh.userData.rockPoints.map(p => `${p.x.toFixed(3)}_${p.y.toFixed(3)}_${p.z.toFixed(3)}`).join('|');
+        if (!geoCache[geoSig]) {
+            geoVar = `geo_${Object.keys(geoCache).length}`;
+            // FLAT ARRAY MAGIC: V([x,y,z, x,y,z...])
+            const ptsStr = mesh.userData.rockPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}`).join(",");
+            geoCode = `const ${geoVar} = new ConvexGeometry(V([${ptsStr}]));\n`;
+            geoCache[geoSig] = { var: geoVar, code: geoCode };
+        }
+    } else {
+        geoSig = `${mesh.userData.shapeType}_${mesh.userData.detail}`;
+        if (!geoCache[geoSig]) {
+            geoVar = `geo_${Object.keys(geoCache).length}`;
+            geoCode = `const ${geoVar} = new THREE.${mesh.userData.shapeType.charAt(0).toUpperCase() + mesh.userData.shapeType.slice(1)}Geometry(${formatGeometryArgs(mesh.userData.shapeType, mesh.userData.detail)});\n`;
+            geoCache[geoSig] = { var: geoVar, code: geoCode };
+        }
+    }
+    const hsl = mesh.material.color.getHSL({}); const colorHex = '#' + new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).getHexString(); const rgh = mesh.material.roughness.toFixed(2), met = mesh.material.metalness.toFixed(2), wf = mesh.material.wireframe;
+    let matSig = `${colorHex}_${rgh}_${met}_${wf}`; if (!matCache[matSig]) { let matVar = `mat_${Object.keys(matCache).length}`; let matCode = `const ${matVar} = new THREE.MeshStandardMaterial({ color: "${colorHex}", roughness: ${rgh}, metalness: ${met}${wf ? ', wireframe: true' : ''} });\n`; matCache[matSig] = { var: matVar, code: matCode }; }
+    return { geoVar: geoCache[geoSig].var, matVar: matCache[matSig].var };
+}
+function formatGeometryArgs(type, detail) { const d = Math.max(3, Math.floor(detail)), polyD = Math.max(0, Math.floor(d / 16)); switch(type) { case 'box': return `1, 1, 1, ${d}, ${d}, ${d}`; case 'sphere': return `0.5, ${d}, ${d}`; case 'cylinder': return `0.5, 0.5, 1, ${d}`; case 'cone': return `0.5, 1, ${d}`; case 'torus': return `0.4, 0.15, ${Math.max(Math.floor(d/2), 3)}, ${d}`; case 'torusKnot': return `0.3, 0.1, ${Math.max(d*2, 8)}, ${Math.max(Math.floor(d/2), 3)}`; case 'dodecahedron': case 'icosahedron': case 'octahedron': case 'tetrahedron': return `0.5, ${polyD}`; default: return ''; } }
+function onWindowResize() { setTimeout(() => { const vp = document.getElementById('viewport'); camera.aspect = vp.clientWidth / vp.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(vp.clientWidth, vp.clientHeight); }, 50); }
+function animate() { requestAnimationFrame(animate); orbitControls.update(); renderer.render(scene, camera); }
+updateCode();
+</script>
+</body>
+</html>
