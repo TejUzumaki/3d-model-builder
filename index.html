@@ -23,17 +23,22 @@
         .dashboard-actions { display: flex; gap: 12px; }
         .dash-btn { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 8px; min-height: 48px; }
         .dash-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; flex-grow: 1; }
         .empty-state { grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 60px 20px; border: 2px dashed var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .empty-state h2 { margin: 0 0 12px 0; font-size: 22px; color: var(--text-main); }
-        .empty-state p { margin: 0; font-size: 16px; max-width: 400px; line-height: 1.5; }
         .project-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.1s, border-color 0.2s; }
         .project-card:hover { transform: translateY(-4px); border-color: var(--accent); }
-        .card-thumb { width: 100%; aspect-ratio: 4/3; background: var(--bg-main); object-fit: cover; border-bottom: 1px solid var(--border); }
-        .card-body { padding: 16px; }
-        .card-title { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-meta { font-size: 12px; color: var(--text-dim); margin-top: 6px; display: flex; justify-content: space-between; text-transform: capitalize; }
-        .card-delete { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: var(--danger); width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
+        .card-thumb { width: 100%; aspect-ratio: 16/9; background: var(--bg-main); object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-body { padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-info { flex: 1; min-width: 0; }
+        .card-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: capitalize; }
+        .card-menu-btn { background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px 8px; font-size: 18px; border-radius: 4px; }
+        .card-menu-btn:hover { background: var(--bg-elevated); color: var(--text-main); }
+        .card-menu-dropdown { position: absolute; right: 12px; bottom: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 10; display: none; }
+        .menu-item { display: block; width: 100%; text-align: left; background: transparent; border: none; color: var(--text-main); padding: 8px 12px; font-size: 13px; cursor: pointer; }
+        .menu-item:hover { background: var(--bg-panel); }
+        .menu-item.danger { color: var(--danger); }
         
         /* Editor Styles */
         #editor-view { display: none; width: 100vw; height: 100vh; }
@@ -76,6 +81,20 @@
         #code-header { padding: 14px 18px; background: var(--bg-panel); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
         #code-output { flex: 1; background: var(--bg-main); color: #d4d4d4; border: none; resize: none; padding: 18px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 14px; outline: none; line-height: 1.5; user-select: text; -webkit-user-select: text; touch-action: auto; width: 100%; }
         #file-input { display: none; }
+        
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 450px; box-shadow: 0 12px 32px rgba(0,0,0,0.6); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 600; }
+        .close-btn { background: var(--bg-elevated); border: none; color: var(--text-main); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 12px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
+        .form-input, .form-select { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -151,9 +170,9 @@
             <div id="transform-panel" class="draggable-panel hidden" style="top: 90px; right: 90px;">
                 <div class="panel-header">Transform</div>
                 <div class="panel-body">
-                    <div class="prop-group"><span class="prop-label">Position</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-50" max="50" step="0.01" id="pos-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-50" max="50" step="0.01" id="pos-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-50" max="50" step="0.01" id="pos-z"></div></div>
+                    <div class="prop-group"><span class="prop-label">Position</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-100" max="100" step="0.01" id="pos-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-100" max="100" step="0.01" id="pos-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-100" max="100" step="0.01" id="pos-z"></div></div>
                     <div class="prop-group"><span class="prop-label">Rotation</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-z"></div></div>
-                    <div class="prop-group"><span class="prop-label">Scale</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="0.1" max="20" step="0.01" id="scale-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="0.1" max="20" step="0.01" id="scale-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="0.1" max="20" step="0.01" id="scale-z"></div></div>
+                    <div class="prop-group"><span class="prop-label">Scale</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="0.1" max="50" step="0.01" id="scale-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="0.1" max="50" step="0.01" id="scale-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="0.1" max="50" step="0.01" id="scale-z"></div></div>
                     <button class="btn" id="btn-reset-transform" style="width: 100%; margin-top: 12px; background: var(--bg-elevated); min-height: 40px;">Reset Transform</button>
                 </div><div class="resize-handle"></div>
             </div>
@@ -165,16 +184,49 @@
     </div>
 </div>
 
+<!-- New Project Modal -->
+<div id="new-project-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">Create New Project</div>
+            <button class="close-btn" id="close-modal-btn">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Project Name</label>
+            <input type="text" id="proj-name-input" class="form-input" placeholder="Untitled Asset">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="proj-cat-input" class="form-select">
+                <option value="Static Prop">Static Prop (Tree/Rock)</option>
+                <option value="Movable Character">Movable Character (Animate)</option>
+                <option value="Terrain">Terrain</option>
+            </select>
+        </div>
+        <div id="terrain-dimensions" class="hidden">
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Width (Units)</label><input type="number" id="ter-w-input" class="form-input" value="40" min="10" max="200"></div>
+                <div class="form-group"><label class="form-label">Depth (Units)</label><input type="number" id="ter-d-input" class="form-input" value="20" min="5" max="100"></div>
+                <div class="form-group"><label class="form-label">Length (Units)</label><input type="number" id="ter-h-input" class="form-input" value="40" min="10" max="200"></div>
+            </div>
+        </div>
+        <button class="btn-primary" id="create-project-btn">Create Project</button>
+    </div>
+</div>
+
 <!-- Help Modal -->
-<div id="help-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:200; display:none; justify-content:center; align-items:center;">
-    <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto;">
-        <h2 style="margin-top:0;">3D Builder Studio Features</h2>
+<div id="help-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">3D Builder Studio Features</div>
+            <button class="close-btn" id="close-help-btn">✕</button>
+        </div>
         <p><strong>Asset Editor:</strong> Build 3D models using primitives and 2D planes (for leaves). Use "Rockify" to make jagged rocks. Group them to form complex structures like trees.</p>
         <p><strong>Terrain Editor:</strong> Generates a 3D volumetric terrain (Cuboid) for game collisions. Adjust Height, Roughness, and Jaggedness. Use the <strong>Sculpt Tool</strong> to paint grooves, or use the <strong>Flatten</strong> brush to create flat areas for villages.</p>
         <p><strong>Asset Importer:</strong> In Terrain mode, use the dropdown to spawn your saved Asset projects directly onto the map.</p>
         <p><strong>Code Generation:</strong> Copies clean, minified Three.js code using flat arrays and geometry caching, ready for your AI.</p>
         <h3>Controls & Shortcuts</h3>
-        <ul>
+        <ul style="font-size:14px; line-height:1.6; color:var(--text-dim);">
             <li><strong>G</strong>: Move</li>
             <li><strong>R</strong>: Rotate</li>
             <li><strong>S</strong>: Scale</li>
@@ -186,7 +238,6 @@
             <li><strong>Ctrl+G</strong>: Group</li>
             <li><strong>Ctrl+Shift+G</strong>: Ungroup</li>
         </ul>
-        <button id="close-help" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; width:100%; margin-top:16px;">Close</button>
     </div>
 </div>
 
@@ -207,14 +258,23 @@ let currentMode = 'translate';
 let isPointerDown = false;
 let isSculpting = false;
 let recentColors = JSON.parse(localStorage.getItem('recent_colors') || '[]');
+let pendingProjectType = null;
+let codeUpdateTimer = null;
 
 init(); animate(); initDraggablePanels(); initKeyboardShortcuts(); setupEventListeners(); renderDashboard();
 
 function setupEventListeners() {
-    document.getElementById('new-asset-btn').addEventListener('click', () => newProject('asset'));
-    document.getElementById('new-terrain-btn').addEventListener('click', () => newProject('terrain'));
-    document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').style.display = 'flex');
-    document.getElementById('close-help').addEventListener('click', () => document.getElementById('help-modal').style.display = 'none');
+    document.getElementById('new-asset-btn').addEventListener('click', () => openNewProjectModal('asset'));
+    document.getElementById('new-terrain-btn').addEventListener('click', () => openNewProjectModal('terrain'));
+    document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('visible'));
+    document.getElementById('close-help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.remove('visible'));
+    
+    document.getElementById('close-modal-btn').addEventListener('click', () => document.getElementById('new-project-modal').classList.remove('visible'));
+    document.getElementById('proj-cat-input').addEventListener('change', (e) => {
+        if (e.target.value === 'Terrain') document.getElementById('terrain-dimensions').classList.remove('hidden');
+        else document.getElementById('terrain-dimensions').classList.add('hidden');
+    });
+    document.getElementById('create-project-btn').addEventListener('click', handleCreateProject);
     
     document.getElementById('btn-translate').addEventListener('click', () => setMode('translate'));
     document.getElementById('btn-rotate').addEventListener('click', () => setMode('rotate'));
@@ -279,7 +339,7 @@ function init() {
     orbitControls = new OrbitControls(camera, renderer.domElement); orbitControls.enableDamping = true; orbitControls.dampingFactor = 0.1;
     transformControls = new TransformControls(camera, renderer.domElement); transformControls.setSize(1.25); 
     transformControls.addEventListener('dragging-changed', e => orbitControls.enabled = !e.value);
-    transformControls.addEventListener('objectChange', () => { if (selectedMesh) syncSliders(); updateCode(); });
+    transformControls.addEventListener('objectChange', () => { if (selectedMesh) syncSliders(); scheduleCodeUpdate(); });
     scene.add(transformControls);
     
     const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
@@ -298,7 +358,7 @@ function init() {
                 const intersects = raycaster.intersectObject(selectedMesh);
                 if (intersects.length > 0) {
                     isSculpting = true;
-                    orbitControls.enabled = false; // Stop camera from moving while sculpting
+                    orbitControls.enabled = false; 
                 }
             }
             return; 
@@ -330,16 +390,12 @@ function init() {
                     let newY = y;
                     if (dir === 'up') newY = y + strength;
                     else if (dir === 'down') newY = y - strength;
-                    else if (dir === 'flatten') {
-                        // Flatten moves towards 0 (or could be average, 0 is simpler for flat bases)
-                        newY = y + (0 - y) * strength; 
-                    }
+                    else if (dir === 'flatten') newY = y + (0 - y) * strength; 
                     pos.setY(vIdx, newY);
                     if(selectedMesh.userData.rockPoints[vIdx]) selectedMesh.userData.rockPoints[vIdx].y = newY;
                 });
                 pos.needsUpdate = true;
                 geo.computeVertexNormals();
-                updateCode();
             }
         }
     });
@@ -350,6 +406,7 @@ function init() {
             isSculpting = false;
             orbitControls.enabled = true;
             pushHistory();
+            updateCode(); // Generate code once when done sculpting
         }
     });
 
@@ -359,6 +416,13 @@ function init() {
 
     window.addEventListener('resize', onWindowResize); 
     renderPalette();
+}
+
+function scheduleCodeUpdate() {
+    clearTimeout(codeUpdateTimer);
+    codeUpdateTimer = setTimeout(() => {
+        updateCode();
+    }, 250); // Debounce code generation by 250ms
 }
 
 // --- Dashboard & Project Management ---
@@ -376,33 +440,79 @@ function renderDashboard() {
     projects.forEach(p => {
         const card = document.createElement('div');
         card.className = 'project-card';
-        card.addEventListener('click', () => openProject(p.id));
-        const delBtn = document.createElement('button'); delBtn.className = 'card-delete'; delBtn.innerText = '✕';
-        delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteProject(p.id); });
-        card.appendChild(delBtn);
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.card-menu-btn') && !e.target.closest('.card-menu-dropdown')) openProject(p.id);
+        });
+        
         const thumb = document.createElement('img'); thumb.src = p.thumb || ''; thumb.className = 'card-thumb'; thumb.alt = p.name; card.appendChild(thumb);
+        
         const body = document.createElement('div'); body.className = 'card-body';
-        body.innerHTML = `<div class="card-title">${p.name}</div><div class="card-meta"><span>${p.type}</span><span>${p.date}</span></div>`;
+        const info = document.createElement('div'); info.className = 'card-info';
+        info.innerHTML = `<div class="card-title">${p.name}</div><div class="card-meta">${p.category || p.type}</div>`;
+        body.appendChild(info);
+        
+        const menuBtn = document.createElement('button'); menuBtn.className = 'card-menu-btn'; menuBtn.innerHTML = '⋮';
+        const dropdown = document.createElement('div'); dropdown.className = 'card-menu-dropdown';
+        dropdown.innerHTML = `<button class="menu-item" data-action="edit">Edit Info</button><button class="menu-item danger" data-action="delete">Delete</button>`;
+        body.appendChild(menuBtn); body.appendChild(dropdown);
+        
+        menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; });
+        dropdown.querySelectorAll('.menu-item').forEach(btn => {
+            btn.addEventListener('click', (e) => { 
+                e.stopPropagation(); dropdown.style.display = 'none';
+                if (btn.dataset.action === 'delete') deleteProject(p.id);
+                else if (btn.dataset.action === 'edit') editProjectInfo(p.id);
+            });
+        });
+        
         card.appendChild(body); grid.appendChild(card);
     });
 }
 
-function newProject(type) {
-    const name = prompt(`Enter name for new ${type} project:`, `Untitled ${type}`);
-    if (!name) return;
-    const projects = getProjects();
-    const id = Date.now();
-    projects.push({ id, name, type, date: new Date().toLocaleDateString(), thumb: '', data: { meshes: [], groups: [] } });
-    saveProjects(projects);
-    openProject(id, type);
+function openNewProjectModal(type) {
+    pendingProjectType = type;
+    document.getElementById('modal-title').innerText = `Create New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+    document.getElementById('proj-name-input').value = `Untitled ${type}`;
+    document.getElementById('proj-cat-input').value = type === 'terrain' ? 'Terrain' : 'Static Prop';
+    document.getElementById('proj-cat-input').dispatchEvent(new Event('change'));
+    document.getElementById('new-project-modal').classList.add('visible');
 }
 
-function openProject(id, forceType = null) {
+function handleCreateProject() {
+    const name = document.getElementById('proj-name-input').value || `Untitled ${pendingProjectType}`;
+    const category = document.getElementById('proj-cat-input').value;
+    let dim = null;
+    if (category === 'Terrain') {
+        dim = { w: parseInt(document.getElementById('ter-w-input').value), d: parseInt(document.getElementById('ter-d-input').value), h: parseInt(document.getElementById('ter-h-input').value) };
+    }
+    document.getElementById('new-project-modal').classList.remove('visible');
+    
+    const projects = getProjects();
+    const id = Date.now();
+    projects.push({ id, name, type: pendingProjectType, category, date: new Date().toLocaleDateString(), thumb: '', data: { meshes: [], groups: [] }, terrainDims: dim });
+    saveProjects(projects);
+    openProject(id, pendingProjectType, dim);
+}
+
+function editProjectInfo(id) {
+    const projects = getProjects();
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    const newName = prompt("Enter new project name:", p.name);
+    if (newName) {
+        p.name = newName;
+        saveProjects(projects);
+        renderDashboard();
+    }
+}
+
+function openProject(id, forceType = null, forceDim = null) {
     const projects = getProjects();
     const p = projects.find(x => x.id === id);
     if (!p) return;
     currentProjectId = id;
     currentProjectType = forceType || p.type;
+    if (forceDim) p.terrainDims = forceDim;
     
     document.getElementById('dashboard-view').style.display = 'none';
     document.getElementById('editor-view').classList.add('active');
@@ -419,7 +529,7 @@ function openProject(id, forceType = null) {
     }
     
     restoreScene(p.data);
-    if (currentProjectType === 'terrain' && meshes.filter(m => m.userData.shapeType === 'terrain').length === 0) addTerrain();
+    if (currentProjectType === 'terrain' && meshes.filter(m => m.userData.shapeType === 'terrain').length === 0) addTerrain(p.terrainDims);
     pushHistory();
     onWindowResize();
     focusCamera();
@@ -487,7 +597,7 @@ function addAssetToTerrain(id) {
     p.data.groups.forEach(gData => { gData.children.forEach(idx => { group.attach(tempMeshes[idx]); tempMeshes[idx].userData.isGrouped = true; }); });
     tempMeshes.forEach((m, i) => { if (!p.data.meshes[i].isGrouped) group.attach(m); });
     
-    group.position.y = 5; // Spawn above terrain
+    group.position.y = 5; 
     scene.add(group); groups.push(group); selectObject(group); pushHistory(); updateCode();
 }
 
@@ -546,7 +656,7 @@ function serializeScene() {
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     return { 
-        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null })), 
+        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null, terDim: m.userData.terDim || null })), 
         groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray() })) 
     }; 
 }
@@ -562,7 +672,8 @@ function restoreScene(state) {
         let geo;
         if (mData.type === 'terrain') {
             const t = mData.terData || { height: 2, rough: 1, flow: 0 };
-            geo = createTerrainGeometry(t.height, t.rough, t.flow).geo;
+            const dim = mData.terDim || { w: 40, d: 20, h: 40 };
+            geo = createTerrainGeometry(t.height, t.rough, t.flow, dim.w, dim.d, dim.h).geo;
         } else if (mData.type === 'plane') {
             geo = new THREE.PlaneGeometry(1, 1, mData.detail, mData.detail);
         } else if (mData.rockAmount > 0 && mData.rockPoints) { 
@@ -573,7 +684,7 @@ function restoreScene(state) {
         const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe, side: mData.type === 'plane' ? THREE.DoubleSide : THREE.FrontSide });
         const m = new THREE.Mesh(geo, mat);
         m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
-        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null };
+        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null, terDim: mData.terDim || null };
         tempMeshes.push(m);
     });
 
@@ -592,13 +703,13 @@ function addShape(type) {
     scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode(); 
 }
 
-function addTerrain() {
+function addTerrain(dim = {w: 40, d: 20, h: 40}) {
     const tData = { height: 2, rough: 0.5, flow: 0.5 };
-    const { geo, points } = createTerrainGeometry(tData.height, tData.rough, tData.flow);
+    const { geo, points } = createTerrainGeometry(tData.height, tData.rough, tData.flow, dim.w, dim.d, dim.h);
     const mat = new THREE.MeshStandardMaterial({ color: 0x4a7c2e, roughness: 1, metalness: 0 });
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.y = -5; // Center the 20-unit depth terrain
-    mesh.userData = { shapeType: 'terrain', detail: 32, rockAmount: 0, isGrouped: false, rockPoints: points, terData: tData };
+    mesh.position.y = -dim.d/2; 
+    mesh.userData = { shapeType: 'terrain', detail: 32, rockAmount: 0, isGrouped: false, rockPoints: points, terData: tData, terDim: dim };
     scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode();
 }
 
@@ -622,20 +733,20 @@ function smoothNoise(x, y) {
     return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
 }
 
-function createTerrainGeometry(height, rough, jagged) {
-    const size = 40, depth = 20, segs = 40;
-    // 3D Volumetric Terrain (Cuboid)
-    const geo = new THREE.BoxGeometry(size, depth, size, segs, 1, segs);
+function createTerrainGeometry(height, rough, jagged, sizeX, depth, sizeZ) {
+    const w = sizeX || 40, d = depth || 20, h = sizeZ || 40;
+    const segs = Math.min(Math.floor(w/2), 40); // Optimize segments
+    const geo = new THREE.BoxGeometry(w, d, h, segs, 1, segs);
     const pos = geo.attributes.position;
     const points = [];
     for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i);
         const z = pos.getZ(i);
-        if (pos.getY(i) > 0) { // Only deform the top face
+        if (pos.getY(i) > 0) { 
             let y = smoothNoise(x * rough, z * rough) * height * 2 - height;
-            y += (smoothNoise(x * rough * 3, z * rough * 3) - 0.5) * height * 0.5; // detail
-            y += (Math.random() - 0.5) * jagged; // jagged spikes
-            pos.setY(i, y + depth/2); // Add half depth to account for box centering
+            y += (smoothNoise(x * rough * 3, z * rough * 3) - 0.5) * height * 0.5; 
+            y += (Math.random() - 0.5) * jagged; 
+            pos.setY(i, y + d/2); 
         }
         points.push(new THREE.Vector3(x, pos.getY(i), z));
     }
@@ -649,11 +760,12 @@ function updateTerrain() {
     const r = parseFloat(document.getElementById('ter-rough').value);
     const j = parseFloat(document.getElementById('ter-flow').value); 
     selectedMesh.userData.terData = { height: h, rough: r, flow: j };
-    const { geo, points } = createTerrainGeometry(h, r, j);
+    const dim = selectedMesh.userData.terDim;
+    const { geo, points } = createTerrainGeometry(h, r, j, dim.w, dim.d, dim.h);
     selectedMesh.geometry.dispose();
     selectedMesh.geometry = geo;
     selectedMesh.userData.rockPoints = points;
-    updateCode();
+    scheduleCodeUpdate();
 }
 
 function createGeometry(type, detail) { 
@@ -674,10 +786,10 @@ function createGeometry(type, detail) {
 }
 function createRockGeometry(type, detail, rockAmount) { const baseDetail = type === 'box' ? Math.max(detail, 4) : Math.max(detail, 8); const baseGeo = createGeometry(type, baseDetail); const pos = baseGeo.attributes.position; const points = []; const tempV = new THREE.Vector3(); for (let i = 0; i < pos.count; i++) { tempV.fromBufferAttribute(pos, i); if (Math.random() < rockAmount / 100) tempV.multiplyScalar(Math.random() * 0.6 + 0.2); points.push(tempV.clone()); } const rockGeo = new ConvexGeometry(points); baseGeo.dispose(); return { geo: rockGeo, points: points }; }
 
-function changeDetail(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const detail = parseInt(val); selectedMesh.userData.detail = detail; selectedMesh.geometry.dispose(); if (selectedMesh.userData.rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, detail, selectedMesh.userData.rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, detail); } updateCode(); } }
-function changeRock(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const rockAmount = parseInt(val); selectedMesh.userData.rockAmount = rockAmount; selectedMesh.geometry.dispose(); if (rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail, rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail); selectedMesh.userData.rockPoints = null; } updateCode(); } }
-function changeRoughness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.roughness = val / 100; updateCode(); } }
-function changeMetalness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.metalness = val / 100; updateCode(); } }
+function changeDetail(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const detail = parseInt(val); selectedMesh.userData.detail = detail; selectedMesh.geometry.dispose(); if (selectedMesh.userData.rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, detail, selectedMesh.userData.rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, detail); } scheduleCodeUpdate(); } }
+function changeRock(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const rockAmount = parseInt(val); selectedMesh.userData.rockAmount = rockAmount; selectedMesh.geometry.dispose(); if (rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail, rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail); selectedMesh.userData.rockPoints = null; } scheduleCodeUpdate(); } }
+function changeRoughness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.roughness = val / 100; scheduleCodeUpdate(); } }
+function changeMetalness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.metalness = val / 100; scheduleCodeUpdate(); } }
 
 function renderPalette() {
     const container = document.getElementById('palette-swatches');
@@ -714,13 +826,13 @@ function updateColor() {
             localStorage.setItem('recent_colors', JSON.stringify(recentColors));
             renderPalette();
         }
-        updateCode(); 
+        scheduleCodeUpdate(); 
     } 
 }
-function toggleWireframe() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; updateCode(); } }
-function updateTransform() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); updateCode(); } }
+function toggleWireframe() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; scheduleCodeUpdate(); } }
+function updateTransform() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); scheduleCodeUpdate(); } }
 function syncSliders() { if (!selectedMesh) return; document.getElementById('pos-x').value = selectedMesh.position.x; document.getElementById('pos-y').value = selectedMesh.position.y; document.getElementById('pos-z').value = selectedMesh.position.z; document.getElementById('rot-x').value = selectedMesh.rotation.x; document.getElementById('rot-y').value = selectedMesh.rotation.y; document.getElementById('rot-z').value = selectedMesh.rotation.z; document.getElementById('scale-x').value = selectedMesh.scale.x; document.getElementById('scale-y').value = selectedMesh.scale.y; document.getElementById('scale-z').value = selectedMesh.scale.z; }
-function resetTransform() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); updateCode(); pushHistory(); } }
+function resetTransform() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); scheduleCodeUpdate(); pushHistory(); } }
 function duplicateSelected() { if (!selectedMesh) return; if (groups.includes(selectedMesh)) { const orig = selectedMesh; const newGroup = new THREE.Group(); newGroup.userData.isGroup = true; orig.children.forEach(child => { const newMesh = child.clone(); newMesh.material = child.material.clone(); newMesh.userData = JSON.parse(JSON.stringify(child.userData)); if (child.userData.rockPoints) newMesh.userData.rockPoints = child.userData.rockPoints.map(v => v.clone()); newGroup.attach(newMesh); }); newGroup.position.x += 1.5; scene.add(newGroup); groups.push(newGroup); selectObject(newGroup); } else if (meshes.includes(selectedMesh)) { const orig = selectedMesh; const newMesh = orig.clone(); newMesh.material = orig.material.clone(); newMesh.position.x += 1.5; newMesh.userData = JSON.parse(JSON.stringify(orig.userData)); if (orig.userData.rockPoints) newMesh.userData.rockPoints = orig.userData.rockPoints.map(v => v.clone()); scene.add(newMesh); meshes.push(newMesh); selectObject(newMesh); } pushHistory(); updateCode(); }
 function groupSelected() { if (meshes.length === 0) return; const group = new THREE.Group(); group.userData.isGroup = true; const toGroup = meshes.filter(m => !m.userData.isGrouped); if (toGroup.length === 0) return; toGroup.forEach(m => { group.attach(m); m.userData.isGrouped = true; }); meshes = meshes.filter(m => !toGroup.includes(m)); groups.push(group); scene.add(group); selectObject(group); pushHistory(); updateCode(); }
 function ungroupSelected() { if (!selectedMesh || !groups.includes(selectedMesh)) return; const group = selectedMesh; const children = [...group.children]; children.forEach(child => { scene.attach(child); child.userData.isGrouped = false; meshes.push(child); }); scene.remove(group); groups = groups.filter(g => g !== group); if (children.length > 0) selectObject(children[0]); else deselectObject(); pushHistory(); updateCode(); }
@@ -765,7 +877,10 @@ function selectObject(obj) {
             document.getElementById('detail-slider').value = obj.userData.detail; 
             document.getElementById('noise-slider').value = obj.userData.rockAmount;
         }
-    } else { document.getElementById('props-panel').classList.add('hidden'); } 
+    } else { 
+        // If it's a group, ensure props panel is hidden but transform panel stays
+        document.getElementById('props-panel').classList.add('hidden'); 
+    } 
 }
 function deselectObject() { selectedMesh = null; transformControls.detach(); document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden'); }
 function toggleCodePanel() { document.getElementById('code-panel').classList.toggle('visible'); onWindowResize(); }
@@ -804,7 +919,9 @@ function getCacheVars(mesh, index, geoCache, matCache) {
         if (!geoCache[geoSig]) {
             geoVar = `geo_terrain`;
             const yPts = mesh.userData.rockPoints.map(p => p.y.toFixed(2)).join(",");
-            geoCode = `const ${geoVar} = new THREE.BoxGeometry(40,20,40,40,1,40);\nconst pos_${geoVar} = ${geoVar}.attributes.position;\nconst y_arr = [${yPts}];\nfor(let i=0; i<pos_${geoVar}.count; i++) pos_${geoVar}.setY(i, y_arr[i]);\n${geoVar}.computeVertexNormals();\n`;
+            const dim = mesh.userData.terDim || {w:40,d:20,h:40};
+            const segs = Math.min(Math.floor(dim.w/2), 40);
+            geoCode = `const ${geoVar} = new THREE.BoxGeometry(${dim.w},${dim.d},${dim.h},${segs},1,${segs});\nconst pos_${geoVar} = ${geoVar}.attributes.position;\nconst y_arr = [${yPts}];\nfor(let i=0; i<pos_${geoVar}.count; i++) pos_${geoVar}.setY(i, y_arr[i]);\n${geoVar}.computeVertexNormals();\n`;
             geoCache[geoSig] = { var: geoVar, code: geoCode };
         }
     } else if (mesh.userData.rockAmount > 0 && mesh.userData.rockPoints) {
