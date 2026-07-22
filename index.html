@@ -125,13 +125,21 @@
                     <button id="btn-rotate" class="btn btn-icon" title="Rotate (R)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                     <button id="btn-scale" class="btn btn-icon" title="Scale (S)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
                     <button id="btn-sculpt" class="btn btn-icon hidden" title="Sculpt Terrain"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></button>
+                    <button id="btn-snap" class="btn btn-icon" title="Snap to Grid"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7M4 4v16"></path></svg></button>
                 </div>
                 <div id="center-tools" class="tool-group">
                     <button class="btn btn-icon" id="btn-home" title="Back to Dashboard"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></button>
+                    <select id="view-select" class="btn" title="Camera View">
+                        <option value="persp">Perspective</option>
+                        <option value="top">Top</option>
+                        <option value="front">Front</option>
+                        <option value="side">Side</option>
+                    </select>
                     <select id="shape-select" class="btn" title="Select Shape"><option value="box">Box</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option><option value="cone">Cone</option><option value="torus">Torus</option><option value="torusKnot">Torus Knot</option><option value="dodecahedron">Dodecahedron</option><option value="icosahedron">Icosahedron</option><option value="octahedron">Octahedron</option><option value="tetrahedron">Tetrahedron</option><option value="plane">Plane (2D Leaf)</option></select>
                     <select id="asset-select" class="btn hidden" title="Select Saved Asset"></select>
                     <button class="btn btn-icon" id="btn-add-shape" title="Add"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
                     <button class="btn btn-icon" id="btn-duplicate" title="Duplicate (Ctrl+D)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-8 5h8M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-hide" title="Hide/Isolate"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg></button>
                     <button class="btn btn-icon" id="btn-group" title="Group (Ctrl+G)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></button>
                     <button class="btn btn-icon" id="btn-ungroup" title="Ungroup (Ctrl+Shift+G)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                     <button class="btn btn-icon" id="btn-focus" title="Focus (F)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
@@ -244,6 +252,7 @@
         <p><strong>Asset Editor:</strong> Build 3D models using primitives and 2D planes. Use the <strong>Part Label</strong> field to name limbs (Head, LeftArm) so your AI can animate them automatically!</p>
         <p><strong>Terrain Editor:</strong> Generates a 3D volumetric terrain for game collisions. Use the <strong>Sculpt Tool</strong> to paint grooves, or use the <strong>Flatten</strong> brush to create flat areas for villages.</p>
         <p><strong>Asset Importer:</strong> In Terrain mode, use the dropdown to spawn your saved Asset projects directly onto the map.</p>
+        <p><strong>Industry Tools:</strong> Use the <strong>View Presets</strong> for orthographic alignment, <strong>Snap to Grid</strong> for modular building, and <strong>Hide/Isolate</strong> to work on overlapping parts.</p>
         <h3>Controls & Shortcuts</h3>
         <ul style="font-size:14px; line-height:1.6; color:var(--text-dim);">
             <li><strong>G</strong>: Move | <strong>R</strong>: Rotate | <strong>S</strong>: Scale</li>
@@ -293,14 +302,16 @@ function setupEventListeners() {
     
     document.getElementById('btn-export').addEventListener('click', () => document.getElementById('export-modal').classList.add('visible'));
     document.getElementById('close-export-btn').addEventListener('click', () => document.getElementById('export-modal').classList.remove('visible'));
-    document.getElementById('exp-json-btn').addEventListener('click', () => downloadFile(JSON.stringify(serializeScene(), null, 2), 'project.json', 'application/json'));
-    document.getElementById('exp-code-btn').addEventListener('click', () => downloadFile(document.getElementById('code-output').value, 'project.txt', 'text/plain'));
+    document.getElementById('exp-json-btn').addEventListener('click', () => downloadFile(JSON.stringify(serializeScene(), null, 2), `${getProjects().find(p=>p.id===currentProjectId)?.name||'project'}.json`, 'application/json'));
+    document.getElementById('exp-code-btn').addEventListener('click', () => downloadFile(document.getElementById('code-output').value, `${getProjects().find(p=>p.id===currentProjectId)?.name||'project'}.txt`, 'text/plain'));
     document.getElementById('exp-glb-btn').addEventListener('click', exportGLB);
     
     document.getElementById('btn-translate').addEventListener('click', () => setMode('translate'));
     document.getElementById('btn-rotate').addEventListener('click', () => setMode('rotate'));
     document.getElementById('btn-scale').addEventListener('click', () => setMode('scale'));
     document.getElementById('btn-sculpt').addEventListener('click', () => setMode('sculpt'));
+    document.getElementById('btn-snap').addEventListener('click', toggleSnap);
+    document.getElementById('view-select').addEventListener('change', (e) => setCameraView(e.target.value));
     
     document.getElementById('btn-home').addEventListener('click', goHome);
     document.getElementById('btn-add-shape').addEventListener('click', () => {
@@ -312,6 +323,7 @@ function setupEventListeners() {
         }
     });
     document.getElementById('btn-duplicate').addEventListener('click', duplicateSelected);
+    document.getElementById('btn-hide').addEventListener('click', () => { if(selectedMesh) { selectedMesh.visible = !selectedMesh.visible; } });
     document.getElementById('btn-group').addEventListener('click', groupSelected);
     document.getElementById('btn-ungroup').addEventListener('click', ungroupSelected);
     document.getElementById('btn-focus').addEventListener('click', focusCamera);
@@ -385,7 +397,7 @@ function init() {
             return; 
         }
         
-        const selectable = [...meshes, ...groups];
+        const selectable = [...meshes, ...groups].filter(m => m.visible);
         const intersects = raycaster.intersectObjects(selectable, true); 
         if (intersects.length > 0) { let root = intersects[0].object; while(root.parent && !selectable.includes(root)) root = root.parent; selectObject(root); } 
         else { deselectObject(); }
@@ -571,7 +583,6 @@ function openProject(id, forceType = null, forceDim = null) {
     }
     
     restoreScene(p.data);
-    // Prevent duplicate terrain spawns
     if (currentProjectType === 'terrain' && meshes.filter(m => m.userData.shapeType === 'terrain').length === 0) addTerrain(p.terrainDims);
     pushHistory();
     onWindowResize();
@@ -699,8 +710,8 @@ function serializeScene() {
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     return { 
-        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null, terDim: m.userData.terDim || null, label: m.userData.label || null })), 
-        groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray() })) 
+        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null, terDim: m.userData.terDim || null, label: m.userData.label || null, visible: m.visible })), 
+        groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray(), visible: g.visible })) 
     }; 
 }
 
@@ -727,12 +738,19 @@ function restoreScene(state) {
         const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe, side: mData.type === 'plane' ? THREE.DoubleSide : THREE.FrontSide });
         const m = new THREE.Mesh(geo, mat);
         m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
+        m.visible = mData.visible !== false;
         m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null, terDim: mData.terDim || null, label: mData.label || null };
         tempMeshes.push(m);
     });
 
     tempMeshes.forEach((m, i) => { if (!state.meshes[i].isGrouped) { scene.add(m); meshes.push(m); } });
-    state.groups.forEach(gData => { const g = new THREE.Group(); g.userData.isGroup = true; gData.children.forEach(idx => { g.attach(tempMeshes[idx]); tempMeshes[idx].userData.isGrouped = true; }); g.position.fromArray(gData.position); g.rotation.fromArray(gData.rotation); g.scale.fromArray(gData.scale); scene.add(g); groups.push(g); });
+    state.groups.forEach((gData, gi) => { 
+        const g = new THREE.Group(); g.userData.isGroup = true; 
+        gData.children.forEach(idx => { g.attach(tempMeshes[idx]); tempMeshes[idx].userData.isGrouped = true; }); 
+        g.position.fromArray(gData.position); g.rotation.fromArray(gData.rotation); g.scale.fromArray(gData.scale);
+        g.visible = gData.visible !== false;
+        scene.add(g); groups.push(g); 
+    });
 
     isRestoringState = false; updateCode(); 
 }
@@ -862,6 +880,22 @@ function updateColor() {
     } 
 }
 function toggleWireframe() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; scheduleCodeUpdate(); } }
+function toggleSnap() { 
+    if (transformControls.translationSnap === 1) { 
+        transformControls.translationSnap = null; transformControls.rotationSnap = null; transformControls.scaleSnap = null; 
+        document.getElementById('btn-snap').classList.remove('active'); 
+    } else { 
+        transformControls.translationSnap = 1; transformControls.rotationSnap = THREE.MathUtils.degToRad(15); transformControls.scaleSnap = 0.1; 
+        document.getElementById('btn-snap').classList.add('active'); 
+    } 
+}
+function setCameraView(view) {
+    if (view === 'persp') { camera.position.set(10, 8, 10); orbitControls.target.set(0, 0, 0); } 
+    else if (view === 'top') { camera.position.set(0, 20, 0.001); orbitControls.target.set(0, 0, 0); } 
+    else if (view === 'front') { camera.position.set(0, 0, 20); orbitControls.target.set(0, 0, 0); } 
+    else if (view === 'side') { camera.position.set(20, 0, 0); orbitControls.target.set(0, 0, 0); } 
+    orbitControls.update();
+}
 function updateTransform() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); scheduleCodeUpdate(); } }
 function syncSliders() { if (!selectedMesh) return; document.getElementById('pos-x').value = selectedMesh.position.x; document.getElementById('pos-y').value = selectedMesh.position.y; document.getElementById('pos-z').value = selectedMesh.position.z; document.getElementById('rot-x').value = selectedMesh.rotation.x; document.getElementById('rot-y').value = selectedMesh.rotation.y; document.getElementById('rot-z').value = selectedMesh.rotation.z; document.getElementById('scale-x').value = selectedMesh.scale.x; document.getElementById('scale-y').value = selectedMesh.scale.y; document.getElementById('scale-z').value = selectedMesh.scale.z; }
 function resetTransform() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); scheduleCodeUpdate(); pushHistory(); } }
@@ -897,7 +931,7 @@ function selectObject(obj) {
         if (obj.userData.shapeType === 'terrain') {
             document.getElementById('prop-color').classList.remove('hidden');
             document.getElementById('prop-terrain').classList.remove('hidden');
-            document.getElementById('prop-label').classList.add('hidden'); // Terrain doesn't need limb labels
+            document.getElementById('prop-label').classList.add('hidden'); 
             const t = obj.userData.terData;
             document.getElementById('ter-height').value = t.height;
             document.getElementById('ter-rough').value = t.rough;
@@ -925,13 +959,20 @@ function downloadFile(content, fileName, type) {
     document.getElementById('export-modal').classList.remove('visible');
 }
 function exportGLB() {
+    const projectName = getProjects().find(p => p.id === currentProjectId)?.name || 'project';
     const exporter = new GLTFExporter();
     const exportGroup = new THREE.Group();
-    [...meshes, ...groups].forEach(m => exportGroup.attach(m.clone()));
+    [...meshes, ...groups].forEach(m => {
+        const clone = m.clone();
+        clone.material = m.material.clone();
+        clone.material.side = THREE.DoubleSide; // FIX: Force double side to prevent invisible faces
+        clone.updateMatrixWorld(true);
+        exportGroup.attach(clone);
+    });
     exporter.parse(exportGroup, (result) => {
         const blob = new Blob([result], { type: 'model/gltf-binary' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'project.glb'; a.click();
+        const a = document.createElement('a'); a.href = url; a.download = `${projectName}.glb`; a.click();
         URL.revokeObjectURL(url);
         document.getElementById('export-modal').classList.remove('visible');
     }, () => alert('GLB Export failed'), { binary: true });
@@ -947,10 +988,10 @@ function updateCode() {
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     const geoCache = {}; const matCache = {}; let meshCode = "";
-    allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; if(m.userData.label) meshCode += `mesh_${i}.name = "${m.userData.label}"; // Part Label for AI\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
+    allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; if(m.userData.label) meshCode += `mesh_${i}.name = "${m.userData.label}"; // Part Label for AI\n`; if(!m.visible) meshCode += `mesh_${i}.visible = false;\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
     let groupCode = "";
     if (meshes.length > 0) { groupCode += `const auto_group = new THREE.Group();\n`; groupCode += `auto_group.add(${meshes.map(m => `mesh_${allMeshes.indexOf(m)}`).join(",")});\n`; groupCode += `scene.add(auto_group);\n\n`; }
-    groups.forEach((g, gi) => { if (g.children.length === 0) return; groupCode += `const group_${gi} = new THREE.Group();\n`; groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`; const p = g.position, r = g.rotation, s = g.scale; groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`; groupCode += `scene.add(group_${gi});\n\n`; });
+    groups.forEach((g, gi) => { if (g.children.length === 0) return; groupCode += `const group_${gi} = new THREE.Group();\n`; if(!g.visible) groupCode += `group_${gi}.visible = false;\n`; groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`; const p = g.position, r = g.rotation, s = g.scale; groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`; groupCode += `scene.add(group_${gi});\n\n`; });
     let finalCode = code; Object.values(geoCache).forEach(c => finalCode += c.code); finalCode += "\n"; Object.values(matCache).forEach(c => finalCode += c.code); finalCode += "\n"; finalCode += meshCode; finalCode += groupCode;
     document.getElementById('code-output').value = finalCode;
 }
