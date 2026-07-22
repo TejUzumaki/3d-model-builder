@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Model Builder Pro</title>
+    <title>3D Model Builder Studio</title>
     <style>
         :root {
             --bg-main: #0f0f10; --bg-panel: #18181b; --bg-elevated: #27272a;
@@ -15,98 +15,181 @@
         html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; 
             background-color: var(--bg-main); font-family: 'Inter', system-ui, sans-serif; 
             color: var(--text-main); user-select: none; -webkit-user-select: none; touch-action: none; }
-        #app { display: flex; width: 100vw; height: 100vh; }
+        
+        /* Dashboard Styles */
+        #dashboard-view { padding: 5vh 5vw; overflow-y: auto; height: 100%; display: flex; flex-direction: column; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+        .dashboard-title { font-size: 32px; font-weight: 700; }
+        .dashboard-actions { display: flex; gap: 12px; }
+        .dash-btn { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 8px; min-height: 48px; }
+        .dash-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; }
+        .empty-state { grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 60px 20px; border: 2px dashed var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .empty-state h2 { margin: 0 0 12px 0; font-size: 22px; color: var(--text-main); }
+        .empty-state p { margin: 0; font-size: 16px; max-width: 400px; line-height: 1.5; }
+        .project-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.1s, border-color 0.2s; }
+        .project-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+        .card-thumb { width: 100%; aspect-ratio: 4/3; background: var(--bg-main); object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-body { padding: 16px; }
+        .card-title { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta { font-size: 12px; color: var(--text-dim); margin-top: 6px; display: flex; justify-content: space-between; text-transform: capitalize; }
+        .card-delete { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: var(--danger); width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
+        
+        /* Editor Styles */
+        #editor-view { display: none; width: 100vw; height: 100vh; }
+        #editor-view.active { display: flex; }
+        #app { display: flex; width: 100%; height: 100%; }
         #viewport { flex: 1; position: relative; overflow: hidden; min-width: 0; }
         #viewport canvas { display: block; width: 100% !important; height: 100% !important; }
-        #top-bar { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; gap: 8px; pointer-events: none; }
+        #top-bar { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; gap: 12px; pointer-events: none; }
         #top-bar > * { pointer-events: auto; }
-        .tool-group { background: var(--bg-panel); border: 1px solid var(--border); padding: 6px; border-radius: 8px; display: flex; gap: 4px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        #center-tools { flex-wrap: wrap; justify-content: center; max-width: 60vw; }
-        .btn { background: transparent; color: var(--text-main); border: none; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 13px; transition: background 0.15s; min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .tool-group { background: var(--bg-panel); border: 1px solid var(--border); padding: 8px; border-radius: 10px; display: flex; gap: 6px; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+        #center-tools { flex-wrap: wrap; justify-content: center; max-width: 70vw; }
+        .btn { background: transparent; color: var(--text-main); border: none; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: 500; font-size: 14px; transition: background 0.15s; min-height: 48px; min-width: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
         .btn:hover { background: var(--bg-elevated); } .btn.active { background: var(--accent); color: white; }
         .btn-danger { color: var(--danger); } .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
-        .btn-icon svg { width: 20px; height: 20px; stroke-width: 1.8; }
-        select.btn { appearance: none; padding: 0 28px 0 12px; background-color: var(--bg-elevated); background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2371717a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 8px top 50%; background-size: 8px auto; }
-        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
-        #toggle-code-btn { background: #ffffff; color: #000000; border: 1px solid var(--border); border-radius: 8px; padding: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-        #toggle-code-btn:hover { background: #e4e4e7; } #toggle-code-btn svg { width: 20px; height: 20px; stroke-width: 2; }
-        .draggable-panel { position: absolute; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 101; width: 260px; min-width: 220px; max-width: 400px; min-height: 150px; display: flex; flex-direction: column; overflow: hidden; }
-        .draggable-panel.hidden { display: none; }
-        .panel-header { padding: 12px 16px; background: var(--bg-panel); cursor: move; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 12px; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-icon svg { width: 22px; height: 22px; stroke-width: 1.8; }
+        select.btn { appearance: none; padding: 0 32px 0 16px; background-color: var(--bg-elevated); background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2371717a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 10px auto; font-size: 14px; }
+        .hidden { display: none !important; }
+        .divider { width: 1px; height: 28px; background: var(--border); margin: 0 6px; }
+        #toggle-code-btn { background: #ffffff; color: #000000; border: 1px solid var(--border); border-radius: 10px; padding: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+        #toggle-code-btn:hover { background: #e4e4e7; } #toggle-code-btn svg { width: 22px; height: 22px; stroke-width: 2; }
+        .draggable-panel { position: absolute; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.6); z-index: 101; width: 280px; min-width: 240px; max-width: 450px; min-height: 150px; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { padding: 14px 18px; background: var(--bg-panel); cursor: move; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 13px; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; }
         .panel-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
-        .resize-handle { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--text-dim) 50%); opacity: 0.5; z-index: 102; }
+        .resize-handle { position: absolute; bottom: 0; right: 0; width: 18px; height: 18px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--text-dim) 50%); opacity: 0.5; z-index: 102; }
         .prop-group { margin-bottom: 20px; } .prop-group:last-child { margin-bottom: 0; }
-        .prop-label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; display: block; letter-spacing: 0.5px; font-weight: 600; }
-        .axis-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .axis-label { width: 14px; font-weight: bold; font-size: 14px; flex-shrink: 0; }
-        .axis-label.x { color: var(--x-color); } .axis-label.y { color: var(--y-color); } .axis-label.z { color: var(--z-color); }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 24px; -webkit-appearance: none; appearance: none; background: var(--bg-elevated); border-radius: 4px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--text-main); cursor: pointer; border: 2px solid var(--bg-panel); }
-        #color-picker-container { display: flex; flex-direction: column; gap: 8px; }
-        .color-slider { width: 100%; height: 20px; border-radius: 4px; appearance: none; cursor: pointer; background: transparent; -webkit-appearance: none; }
-        .color-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 8px; height: 24px; background: var(--text-main); border-radius: 2px; border: 1px solid var(--bg-main); cursor: pointer; }
+        .prop-label { font-size: 12px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; display: block; letter-spacing: 0.5px; font-weight: 600; }
+        .axis-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .axis-label { width: 16px; font-weight: bold; font-size: 16px; flex-shrink: 0; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 28px; -webkit-appearance: none; appearance: none; background: var(--bg-elevated); border-radius: 6px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--text-main); cursor: pointer; border: 3px solid var(--bg-panel); }
+        #color-picker-container { display: flex; flex-direction: column; gap: 10px; }
+        .color-slider { width: 100%; height: 24px; border-radius: 6px; appearance: none; cursor: pointer; background: transparent; -webkit-appearance: none; }
+        .color-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 10px; height: 28px; background: var(--text-main); border-radius: 3px; border: 1px solid var(--bg-main); cursor: pointer; }
         #hue-slider { background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); }
         #sat-slider { background: linear-gradient(to right, #808080, #ffffff); } #light-slider { background: linear-gradient(to right, #000000, #808080, #ffffff); } 
+        .palette-container { display: flex; gap: 8px; margin-top: 10px; }
+        .palette-swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--border); cursor: pointer; }
         #code-panel { width: 0; min-width: 0; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s ease; }
-        #code-panel.visible { width: 380px; }
-        #code-header { padding: 12px 16px; background: var(--bg-panel); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
-        #code-output { flex: 1; background: var(--bg-main); color: #d4d4d4; border: none; resize: none; padding: 16px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; outline: none; line-height: 1.5; user-select: text; -webkit-user-select: text; touch-action: auto; width: 100%; }
+        #code-panel.visible { width: 420px; }
+        #code-header { padding: 14px 18px; background: var(--bg-panel); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+        #code-output { flex: 1; background: var(--bg-main); color: #d4d4d4; border: none; resize: none; padding: 18px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 14px; outline: none; line-height: 1.5; user-select: text; -webkit-user-select: text; touch-action: auto; width: 100%; }
         #file-input { display: none; }
     </style>
 </head>
 <body>
-<div id="app">
-    <div id="viewport">
-        <div id="top-bar">
-            <div id="transform-modes" class="tool-group">
-                <button id="btn-translate" class="btn btn-icon active" onclick="setMode('translate')" title="Move"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18m0 0l-7-7m7 7l7-7"></path></svg></button>
-                <button id="btn-rotate" class="btn btn-icon" onclick="setMode('rotate')" title="Rotate"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-                <button id="btn-scale" class="btn btn-icon" onclick="setMode('scale')" title="Scale"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
-            </div>
-            <div id="center-tools" class="tool-group">
-                <select id="shape-select" class="btn" title="Select Shape"><option value="box">Box</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option><option value="cone">Cone</option><option value="torus">Torus</option><option value="torusKnot">Torus Knot</option><option value="dodecahedron">Dodecahedron</option><option value="icosahedron">Icosahedron</option><option value="octahedron">Octahedron</option><option value="tetrahedron">Tetrahedron</option></select>
-                <button class="btn btn-icon" onclick="addShape(document.getElementById('shape-select').value)" title="Add Shape"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
-                <button class="btn btn-icon" onclick="duplicateSelected()" title="Duplicate"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-8 5h8M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg></button>
-                <button class="btn btn-icon" onclick="groupSelected()" title="Group"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></button>
-                <button class="btn btn-icon" onclick="ungroupSelected()" title="Ungroup"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-                <button class="btn btn-icon" onclick="focusCamera()" title="Focus Camera"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
-                <button class="btn btn-icon btn-danger" onclick="deleteSelected()" title="Delete"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-            </div>
-            <div id="right-tools" class="tool-group">
-                <button class="btn btn-icon" onclick="undo()" title="Undo"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>
-                <button class="btn btn-icon" onclick="redo()" title="Redo"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path></svg></button>
-                <div class="divider"></div>
-                <button class="btn btn-icon" onclick="exportScene()" title="Export JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
-                <button class="btn btn-icon" onclick="document.getElementById('file-input').click()" title="Import JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></button>
-                <button class="btn btn-icon" onclick="toggleFullscreen()" title="Fullscreen"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
-                <button id="toggle-code-btn" onclick="toggleCodePanel()" title="Toggle Code Panel"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg></button>
-                <input type="file" id="file-input" accept=".json" onchange="importScene(event)">
-            </div>
-        </div>
-        <div id="props-panel" class="draggable-panel hidden" style="top: 80px; left: 16px;">
-            <div class="panel-header">Properties</div>
-            <div class="panel-body">
-                <div class="prop-group"><span class="prop-label">Color (HSL)</span><div id="color-picker-container"><input type="range" min="0" max="360" value="0" class="color-slider" id="hue-slider" oninput="updateColor()"><input type="range" min="0" max="100" value="0" class="color-slider" id="sat-slider" oninput="updateColor()"><input type="range" min="0" max="100" value="50" class="color-slider" id="light-slider" oninput="updateColor()"></div></div>
-                <div class="prop-group"><span class="prop-label">Segments (Polycount)</span><input type="range" id="detail-slider" min="3" max="64" value="32" oninput="changeDetail(this.value)"></div>
-                <div class="prop-group"><span class="prop-label">Rockify (Flat Cuts)</span><input type="range" id="noise-slider" min="0" max="80" value="0" oninput="changeRock(this.value)"></div>
-                <div class="prop-group"><span class="prop-label">Material</span><div style="display: flex; gap: 8px; margin-top: 8px;"><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:4px; font-size:10px;">Roughness</small><input type="range" min="0" max="100" value="100" oninput="changeRoughness(this.value)"></div><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:4px; font-size:10px;">Metalness</small><input type="range" min="0" max="100" value="0" oninput="changeMetalness(this.value)"></div></div><button class="btn" style="width: 100%; margin-top: 12px; background: var(--bg-elevated); min-height: 36px;" onclick="toggleWireframe()">Toggle Wireframe</button></div>
-            </div><div class="resize-handle"></div>
-        </div>
-        <div id="transform-panel" class="draggable-panel hidden" style="top: 80px; right: 80px;">
-            <div class="panel-header">Transform</div>
-            <div class="panel-body">
-                <div class="prop-group"><span class="prop-label">Position</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-10" max="10" step="0.01" id="pos-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-10" max="10" step="0.01" id="pos-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-10" max="10" step="0.01" id="pos-z" oninput="updateTransform()"></div></div>
-                <div class="prop-group"><span class="prop-label">Rotation</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-z" oninput="updateTransform()"></div></div>
-                <div class="prop-group"><span class="prop-label">Scale</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="0.1" max="5" step="0.01" id="scale-x" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="0.1" max="5" step="0.01" id="scale-y" oninput="updateTransform()"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="0.1" max="5" step="0.01" id="scale-z" oninput="updateTransform()"></div></div>
-                <button class="btn" style="width: 100%; margin-top: 10px; background: var(--bg-elevated); min-height: 36px;" onclick="resetTransform()">Reset Transform</button>
-            </div><div class="resize-handle"></div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashboard-view">
+    <div class="dashboard-header">
+        <div class="dashboard-title">3D Model Builder Studio</div>
+        <div class="dashboard-actions">
+            <button class="dash-btn primary" id="new-asset-btn">+ New Asset</button>
+            <button class="dash-btn primary" id="new-terrain-btn">+ New Terrain</button>
+            <button class="dash-btn" id="help-btn">Help</button>
         </div>
     </div>
-    <div id="code-panel" class="visible">
-        <div id="code-header"><span>AI Export Code</span><button class="btn btn-icon" onclick="copyCode()" title="Copy Code" style="width: auto; padding: 0 8px; font-size: 11px; gap: 4px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg><span>Copy</span></button></div>
-        <textarea id="code-output" readonly></textarea>
+    <div id="project-grid" class="project-grid"></div>
+</div>
+
+<!-- EDITOR VIEW -->
+<div id="editor-view">
+    <div id="app">
+        <div id="viewport">
+            <div id="top-bar">
+                <div id="transform-modes" class="tool-group">
+                    <button id="btn-translate" class="btn btn-icon active" title="Move (G)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18m0 0l-7-7m7 7l7-7"></path></svg></button>
+                    <button id="btn-rotate" class="btn btn-icon" title="Rotate (R)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                    <button id="btn-scale" class="btn btn-icon" title="Scale (S)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                    <button id="btn-sculpt" class="btn btn-icon hidden" title="Sculpt Terrain"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></button>
+                </div>
+                <div id="center-tools" class="tool-group">
+                    <button class="btn btn-icon" id="btn-home" title="Back to Dashboard"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></button>
+                    <select id="shape-select" class="btn" title="Select Shape"><option value="box">Box</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option><option value="cone">Cone</option><option value="torus">Torus</option><option value="torusKnot">Torus Knot</option><option value="dodecahedron">Dodecahedron</option><option value="icosahedron">Icosahedron</option><option value="octahedron">Octahedron</option><option value="tetrahedron">Tetrahedron</option><option value="plane">Plane (2D Leaf)</option></select>
+                    <select id="asset-select" class="btn hidden" title="Select Saved Asset"></select>
+                    <button class="btn btn-icon" id="btn-add-shape" title="Add"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-duplicate" title="Duplicate (Ctrl+D)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-8 5h8M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-group" title="Group (Ctrl+G)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-ungroup" title="Ungroup (Ctrl+Shift+G)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-focus" title="Focus (F)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
+                    <button class="btn btn-icon btn-danger" id="btn-delete" title="Delete (Del)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                </div>
+                <div id="right-tools" class="tool-group">
+                    <button class="btn btn-icon" id="btn-undo" title="Undo (Ctrl+Z)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-redo" title="Redo (Ctrl+Shift+Z)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path></svg></button>
+                    <div class="divider"></div>
+                    <button class="btn btn-icon" id="btn-export" title="Export JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-import" title="Import JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-fullscreen" title="Fullscreen"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                    <button id="toggle-code-btn" title="Toggle Code Panel"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg></button>
+                    <input type="file" id="file-input" accept=".json" style="display:none;">
+                </div>
+            </div>
+            <div id="props-panel" class="draggable-panel hidden" style="top: 90px; left: 16px;">
+                <div class="panel-header">Properties</div>
+                <div class="panel-body">
+                    <div id="prop-color" class="prop-group"><span class="prop-label">Color (HSL)</span><div id="color-picker-container"><input type="range" min="0" max="360" value="0" class="color-slider" id="hue-slider"><input type="range" min="0" max="100" value="0" class="color-slider" id="sat-slider"><input type="range" min="0" max="100" value="50" class="color-slider" id="light-slider"></div><div class="palette-container" id="palette-swatches"></div></div>
+                    <div id="prop-detail" class="prop-group"><span class="prop-label">Segments (Polycount)</span><input type="range" id="detail-slider" min="3" max="64" value="32"></div>
+                    <div id="prop-rock" class="prop-group"><span class="prop-label">Rockify (Flat Cuts)</span><input type="range" id="noise-slider" min="0" max="80" value="0"></div>
+                    
+                    <div id="prop-terrain" class="hidden">
+                        <div class="prop-group"><span class="prop-label">Base Height</span><input type="range" min="0" max="10" step="0.1" id="ter-height"></div>
+                        <div class="prop-group"><span class="prop-label">Noise Scale (Roughness)</span><input type="range" min="0.1" max="2" step="0.1" id="ter-rough"></div>
+                        <div class="prop-group"><span class="prop-label">Jaggedness</span><input type="range" min="0" max="2" step="0.1" id="ter-flow"></div>
+                        <div class="prop-group"><span class="prop-label">Sculpt Tool</span>
+                            <div style="display:flex; gap:8px;">
+                                <select id="sculpt-dir" class="btn" style="flex:1; min-height: 36px; padding: 0 10px;"><option value="up">Raise</option><option value="down">Lower</option><option value="flatten">Flatten</option></select>
+                                <input type="range" id="sculpt-strength" min="0.1" max="1" step="0.1" value="0.3" style="flex:1;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prop-group"><span class="prop-label">Material</span><div style="display: flex; gap: 10px; margin-top: 8px;"><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:6px; font-size:11px;">Roughness</small><input type="range" min="0" max="100" value="100" id="mat-rough"></div><div style="flex: 1; min-width: 0;"><small style="color: var(--text-dim); display:block; margin-bottom:6px; font-size:11px;">Metalness</small><input type="range" min="0" max="100" value="0" id="mat-metal"></div></div><button class="btn" id="btn-wireframe" style="width: 100%; margin-top: 12px; background: var(--bg-elevated); min-height: 40px;">Toggle Wireframe</button></div>
+                </div><div class="resize-handle"></div>
+            </div>
+            <div id="transform-panel" class="draggable-panel hidden" style="top: 90px; right: 90px;">
+                <div class="panel-header">Transform</div>
+                <div class="panel-body">
+                    <div class="prop-group"><span class="prop-label">Position</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-50" max="50" step="0.01" id="pos-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-50" max="50" step="0.01" id="pos-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-50" max="50" step="0.01" id="pos-z"></div></div>
+                    <div class="prop-group"><span class="prop-label">Rotation</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="-3.14" max="3.14" step="0.01" id="rot-z"></div></div>
+                    <div class="prop-group"><span class="prop-label">Scale</span><div class="axis-row"><span class="axis-label x">X</span><input type="range" min="0.1" max="20" step="0.01" id="scale-x"></div><div class="axis-row"><span class="axis-label y">Y</span><input type="range" min="0.1" max="20" step="0.01" id="scale-y"></div><div class="axis-row"><span class="axis-label z">Z</span><input type="range" min="0.1" max="20" step="0.01" id="scale-z"></div></div>
+                    <button class="btn" id="btn-reset-transform" style="width: 100%; margin-top: 12px; background: var(--bg-elevated); min-height: 40px;">Reset Transform</button>
+                </div><div class="resize-handle"></div>
+            </div>
+        </div>
+        <div id="code-panel" class="visible">
+            <div id="code-header"><span>AI Export Code</span><button class="btn btn-icon" id="btn-copy-code" title="Copy Code" style="width: auto; padding: 0 12px; font-size: 12px; gap: 6px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg><span>Copy</span></button></div>
+            <textarea id="code-output" readonly></textarea>
+        </div>
     </div>
 </div>
+
+<!-- Help Modal -->
+<div id="help-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:200; display:none; justify-content:center; align-items:center;">
+    <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto;">
+        <h2 style="margin-top:0;">3D Builder Studio Features</h2>
+        <p><strong>Asset Editor:</strong> Build 3D models using primitives and 2D planes (for leaves). Use "Rockify" to make jagged rocks. Group them to form complex structures like trees.</p>
+        <p><strong>Terrain Editor:</strong> Generates a 3D volumetric terrain (Cuboid) for game collisions. Adjust Height, Roughness, and Jaggedness. Use the <strong>Sculpt Tool</strong> to paint grooves, or use the <strong>Flatten</strong> brush to create flat areas for villages.</p>
+        <p><strong>Asset Importer:</strong> In Terrain mode, use the dropdown to spawn your saved Asset projects directly onto the map.</p>
+        <p><strong>Code Generation:</strong> Copies clean, minified Three.js code using flat arrays and geometry caching, ready for your AI.</p>
+        <h3>Controls & Shortcuts</h3>
+        <ul>
+            <li><strong>G</strong>: Move</li>
+            <li><strong>R</strong>: Rotate</li>
+            <li><strong>S</strong>: Scale</li>
+            <li><strong>F</strong>: Focus Camera</li>
+            <li><strong>Del</strong>: Delete Object</li>
+            <li><strong>Ctrl+Z</strong>: Undo</li>
+            <li><strong>Ctrl+Shift+Z</strong>: Redo</li>
+            <li><strong>Ctrl+D</strong>: Duplicate</li>
+            <li><strong>Ctrl+G</strong>: Group</li>
+            <li><strong>Ctrl+Shift+G</strong>: Ungroup</li>
+        </ul>
+        <button id="close-help" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; width:100%; margin-top:16px;">Close</button>
+    </div>
+</div>
+
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from 'three';
@@ -118,17 +201,78 @@ let scene, camera, renderer, orbitControls, transformControls;
 let meshes = []; let groups = []; let selectedMesh = null;
 let history = []; let historyIndex = -1; const MAX_HISTORY = 50;
 let isRestoringState = false; 
+let currentProjectId = null;
+let currentProjectType = 'asset';
+let currentMode = 'translate';
+let isPointerDown = false;
+let isSculpting = false;
+let recentColors = JSON.parse(localStorage.getItem('recent_colors') || '[]');
 
-init(); animate(); initDraggablePanels(); initKeyboardShortcuts();
+init(); animate(); initDraggablePanels(); initKeyboardShortcuts(); setupEventListeners(); renderDashboard();
+
+function setupEventListeners() {
+    document.getElementById('new-asset-btn').addEventListener('click', () => newProject('asset'));
+    document.getElementById('new-terrain-btn').addEventListener('click', () => newProject('terrain'));
+    document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').style.display = 'flex');
+    document.getElementById('close-help').addEventListener('click', () => document.getElementById('help-modal').style.display = 'none');
+    
+    document.getElementById('btn-translate').addEventListener('click', () => setMode('translate'));
+    document.getElementById('btn-rotate').addEventListener('click', () => setMode('rotate'));
+    document.getElementById('btn-scale').addEventListener('click', () => setMode('scale'));
+    document.getElementById('btn-sculpt').addEventListener('click', () => setMode('sculpt'));
+    
+    document.getElementById('btn-home').addEventListener('click', goHome);
+    document.getElementById('btn-add-shape').addEventListener('click', () => {
+        if (currentProjectType === 'terrain') {
+            const id = document.getElementById('asset-select').value;
+            if(id) addAssetToTerrain(id);
+        } else {
+            addShape(document.getElementById('shape-select').value);
+        }
+    });
+    document.getElementById('btn-duplicate').addEventListener('click', duplicateSelected);
+    document.getElementById('btn-group').addEventListener('click', groupSelected);
+    document.getElementById('btn-ungroup').addEventListener('click', ungroupSelected);
+    document.getElementById('btn-focus').addEventListener('click', focusCamera);
+    document.getElementById('btn-delete').addEventListener('click', deleteSelected);
+    
+    document.getElementById('btn-undo').addEventListener('click', undo);
+    document.getElementById('btn-redo').addEventListener('click', redo);
+    document.getElementById('btn-export').addEventListener('click', exportScene);
+    document.getElementById('btn-import').addEventListener('click', () => document.getElementById('file-input').click());
+    document.getElementById('file-input').addEventListener('change', importScene);
+    document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
+    document.getElementById('toggle-code-btn').addEventListener('click', toggleCodePanel);
+    
+    document.getElementById('hue-slider').addEventListener('input', updateColor);
+    document.getElementById('sat-slider').addEventListener('input', updateColor);
+    document.getElementById('light-slider').addEventListener('input', updateColor);
+    document.getElementById('detail-slider').addEventListener('input', (e) => changeDetail(e.target.value));
+    document.getElementById('noise-slider').addEventListener('input', (e) => changeRock(e.target.value));
+    document.getElementById('ter-height').addEventListener('input', updateTerrain);
+    document.getElementById('ter-rough').addEventListener('input', updateTerrain);
+    document.getElementById('ter-flow').addEventListener('input', updateTerrain);
+    document.getElementById('mat-rough').addEventListener('input', (e) => changeRoughness(e.target.value));
+    document.getElementById('mat-metal').addEventListener('input', (e) => changeMetalness(e.target.value));
+    document.getElementById('btn-wireframe').addEventListener('click', toggleWireframe);
+    
+    ['pos-x', 'pos-y', 'pos-z', 'rot-x', 'rot-y', 'rot-z', 'scale-x', 'scale-y', 'scale-z'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateTransform);
+    });
+    document.getElementById('btn-reset-transform').addEventListener('click', resetTransform);
+    document.getElementById('btn-copy-code').addEventListener('click', copyCode);
+}
 
 function init() {
     scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f0f10);
-    const grid = new THREE.GridHelper(20, 20, 0x27272a, 0x18181b); scene.add(grid);
+    const grid = new THREE.GridHelper(50, 50, 0x27272a, 0x18181b); scene.add(grid);
     const viewport = document.getElementById('viewport');
-    camera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 0.1, 1000);
-    camera.position.set(6, 5, 6);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    const w = viewport.clientWidth || window.innerWidth;
+    const h = viewport.clientHeight || window.innerHeight;
+    camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 1000);
+    camera.position.set(10, 8, 10);
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(w, h);
     renderer.setPixelRatio(window.devicePixelRatio); viewport.appendChild(renderer.domElement);
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); dirLight.position.set(5, 10, 5); scene.add(dirLight);
@@ -137,26 +281,214 @@ function init() {
     transformControls.addEventListener('dragging-changed', e => orbitControls.enabled = !e.value);
     transformControls.addEventListener('objectChange', () => { if (selectedMesh) syncSliders(); updateCode(); });
     scene.add(transformControls);
+    
     const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+    
     renderer.domElement.addEventListener('pointerdown', (event) => {
+        isPointerDown = true;
         if (event.target !== renderer.domElement) return;
+        
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
+        
+        if (currentMode === 'sculpt') {
+            if (selectedMesh && selectedMesh.userData.shapeType === 'terrain') {
+                const intersects = raycaster.intersectObject(selectedMesh);
+                if (intersects.length > 0) {
+                    isSculpting = true;
+                    orbitControls.enabled = false; // Stop camera from moving while sculpting
+                }
+            }
+            return; 
+        }
+        
         const selectable = [...meshes, ...groups];
         const intersects = raycaster.intersectObjects(selectable, true); 
         if (intersects.length > 0) { let root = intersects[0].object; while(root.parent && !selectable.includes(root)) root = root.parent; selectObject(root); } 
         else { deselectObject(); }
     });
 
-    // FIX: Smart history tracking. Only save on pointerup if it happened on the canvas or panels, NOT on buttons.
+    renderer.domElement.addEventListener('pointermove', (event) => {
+        if (!isPointerDown) return;
+        if (currentMode === 'sculpt' && isSculpting && selectedMesh && selectedMesh.userData.shapeType === 'terrain') {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(selectedMesh);
+            if (intersects.length > 0) {
+                const face = intersects[0].face;
+                const geo = selectedMesh.geometry;
+                const pos = geo.attributes.position;
+                const dir = document.getElementById('sculpt-dir').value;
+                const strength = parseFloat(document.getElementById('sculpt-strength').value);
+                
+                [face.a, face.b, face.c].forEach(vIdx => {
+                    let y = pos.getY(vIdx);
+                    let newY = y;
+                    if (dir === 'up') newY = y + strength;
+                    else if (dir === 'down') newY = y - strength;
+                    else if (dir === 'flatten') {
+                        // Flatten moves towards 0 (or could be average, 0 is simpler for flat bases)
+                        newY = y + (0 - y) * strength; 
+                    }
+                    pos.setY(vIdx, newY);
+                    if(selectedMesh.userData.rockPoints[vIdx]) selectedMesh.userData.rockPoints[vIdx].y = newY;
+                });
+                pos.needsUpdate = true;
+                geo.computeVertexNormals();
+                updateCode();
+            }
+        }
+    });
+
+    renderer.domElement.addEventListener('pointerup', () => { 
+        isPointerDown = false; 
+        if (isSculpting) {
+            isSculpting = false;
+            orbitControls.enabled = true;
+            pushHistory();
+        }
+    });
+
     const smartPushHistory = (e) => { if (!isRestoringState && (e.target.tagName === 'CANVAS' || e.target.tagName === 'INPUT' || e.target.classList.contains('axis-label'))) pushHistory(); };
     renderer.domElement.addEventListener('pointerup', smartPushHistory);
     document.querySelectorAll('.draggable-panel').forEach(p => p.addEventListener('pointerup', smartPushHistory));
 
-    window.addEventListener('resize', onWindowResize); onWindowResize(); 
-    try { const saved = localStorage.getItem('ai_builder_scene'); if (saved) { restoreScene(JSON.parse(saved)); pushHistory(); } } catch (e) { console.error("Failed to load save", e); }
+    window.addEventListener('resize', onWindowResize); 
+    renderPalette();
+}
+
+// --- Dashboard & Project Management ---
+function getProjects() { return JSON.parse(localStorage.getItem('builder_projects') || '[]'); }
+function saveProjects(projects) { localStorage.setItem('builder_projects', JSON.stringify(projects)); }
+
+function renderDashboard() {
+    const grid = document.getElementById('project-grid');
+    const projects = getProjects();
+    grid.innerHTML = '';
+    if (projects.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><h2>No Projects Yet</h2><p>You haven't created any 3D models. Click "New Asset" or "New Terrain" above to start building!</p></div>`;
+        return;
+    }
+    projects.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.addEventListener('click', () => openProject(p.id));
+        const delBtn = document.createElement('button'); delBtn.className = 'card-delete'; delBtn.innerText = '✕';
+        delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteProject(p.id); });
+        card.appendChild(delBtn);
+        const thumb = document.createElement('img'); thumb.src = p.thumb || ''; thumb.className = 'card-thumb'; thumb.alt = p.name; card.appendChild(thumb);
+        const body = document.createElement('div'); body.className = 'card-body';
+        body.innerHTML = `<div class="card-title">${p.name}</div><div class="card-meta"><span>${p.type}</span><span>${p.date}</span></div>`;
+        card.appendChild(body); grid.appendChild(card);
+    });
+}
+
+function newProject(type) {
+    const name = prompt(`Enter name for new ${type} project:`, `Untitled ${type}`);
+    if (!name) return;
+    const projects = getProjects();
+    const id = Date.now();
+    projects.push({ id, name, type, date: new Date().toLocaleDateString(), thumb: '', data: { meshes: [], groups: [] } });
+    saveProjects(projects);
+    openProject(id, type);
+}
+
+function openProject(id, forceType = null) {
+    const projects = getProjects();
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    currentProjectId = id;
+    currentProjectType = forceType || p.type;
+    
+    document.getElementById('dashboard-view').style.display = 'none';
+    document.getElementById('editor-view').classList.add('active');
+    
+    if (currentProjectType === 'terrain') {
+        document.getElementById('shape-select').classList.add('hidden');
+        document.getElementById('asset-select').classList.remove('hidden');
+        populateAssetDropdown();
+        document.getElementById('btn-sculpt').classList.remove('hidden');
+    } else {
+        document.getElementById('shape-select').classList.remove('hidden');
+        document.getElementById('asset-select').classList.add('hidden');
+        document.getElementById('btn-sculpt').classList.add('hidden');
+    }
+    
+    restoreScene(p.data);
+    if (currentProjectType === 'terrain' && meshes.filter(m => m.userData.shapeType === 'terrain').length === 0) addTerrain();
+    pushHistory();
+    onWindowResize();
+    focusCamera();
+}
+
+function goHome() {
+    autoSave(); 
+    currentProjectId = null;
+    document.getElementById('editor-view').classList.remove('active');
+    document.getElementById('dashboard-view').style.display = 'flex';
+    renderDashboard();
+}
+
+function deleteProject(id) {
+    if (!confirm('Delete this project permanently?')) return;
+    let projects = getProjects();
+    projects = projects.filter(p => p.id !== id);
+    saveProjects(projects);
+    renderDashboard();
+}
+
+function autoSave() {
+    if (!currentProjectId) return;
+    let projects = getProjects();
+    const idx = projects.findIndex(p => p.id === currentProjectId);
+    if (idx !== -1) {
+        projects[idx].data = serializeScene();
+        renderer.render(scene, camera);
+        try { projects[idx].thumb = renderer.domElement.toDataURL('image/jpeg', 0.4); } catch(e){}
+        saveProjects(projects);
+    }
+}
+window.addEventListener('beforeunload', autoSave);
+
+function populateAssetDropdown() {
+    const select = document.getElementById('asset-select');
+    select.innerHTML = '';
+    const assets = getProjects().filter(p => p.type === 'asset');
+    if (assets.length === 0) {
+        const opt = document.createElement('option'); opt.innerText = 'No Assets Saved'; opt.disabled = true; select.appendChild(opt);
+        return;
+    }
+    assets.forEach(p => { const opt = document.createElement('option'); opt.value = p.id; opt.innerText = p.name; select.appendChild(opt); });
+}
+
+function addAssetToTerrain(id) {
+    const p = getProjects().find(x => x.id == id);
+    if (!p) return;
+    
+    const tempMeshes = [];
+    p.data.meshes.forEach(mData => {
+        let geo;
+        if (mData.type === 'plane') geo = new THREE.PlaneGeometry(1, 1, mData.detail, mData.detail);
+        else if (mData.rockAmount > 0 && mData.rockPoints) geo = new ConvexGeometry(mData.rockPoints.map(pt => new THREE.Vector3(pt[0], pt[1], pt[2])));
+        else geo = createGeometry(mData.type, mData.detail);
+        
+        const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe, side: mData.type === 'plane' ? THREE.DoubleSide : THREE.FrontSide });
+        const m = new THREE.Mesh(geo, mat);
+        m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
+        m.userData = { ...mData, rockPoints: mData.rockPoints ? mData.rockPoints.map(pt => new THREE.Vector3(pt[0], pt[1], pt[2])) : null };
+        tempMeshes.push(m);
+    });
+    
+    const group = new THREE.Group(); group.userData.isGroup = true;
+    p.data.groups.forEach(gData => { gData.children.forEach(idx => { group.attach(tempMeshes[idx]); tempMeshes[idx].userData.isGrouped = true; }); });
+    tempMeshes.forEach((m, i) => { if (!p.data.meshes[i].isGrouped) group.attach(m); });
+    
+    group.position.y = 5; // Spawn above terrain
+    scene.add(group); groups.push(group); selectObject(group); pushHistory(); updateCode();
 }
 
 function initDraggablePanels() {
@@ -169,21 +501,52 @@ function initDraggablePanels() {
         if (resizeHandle) {
             let isResizing = false, startW, startH, startRX, startRY;
             resizeHandle.addEventListener('pointerdown', (e) => { isResizing = true; startW = panel.offsetWidth; startH = panel.offsetHeight; startRX = e.clientX; startRY = e.clientY; resizeHandle.setPointerCapture(e.pointerId); e.stopPropagation(); });
-            resizeHandle.addEventListener('pointermove', (e) => { if (!isResizing) return; panel.style.width = `${Math.max(220, startW + (e.clientX - startRX))}px`; panel.style.height = `${Math.max(150, startH + (e.clientY - startRY))}px`; });
+            resizeHandle.addEventListener('pointermove', (e) => { if (!isResizing) return; panel.style.width = `${Math.max(240, startW + (e.clientX - startRX))}px`; panel.style.height = `${Math.max(150, startH + (e.clientY - startRY))}px`; });
             resizeHandle.addEventListener('pointerup', (e) => { isResizing = false; resizeHandle.releasePointerCapture(e.pointerId); });
         }
     });
 }
-function initKeyboardShortcuts() { window.addEventListener('keydown', (e) => { if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) { e.preventDefault(); redo(); } }); }
-function pushHistory() { if (isRestoringState) return; const state = serializeScene(); history = history.slice(0, historyIndex + 1); history.push(state); if (history.length > MAX_HISTORY) history.shift(); historyIndex = history.length - 1; try { localStorage.setItem('ai_builder_scene', JSON.stringify(state)); } catch (e) {} }
-window.undo = function() { if (historyIndex > 0) { historyIndex--; restoreScene(history[historyIndex]); } }
-window.redo = function() { if (historyIndex < history.length - 1) { historyIndex++; restoreScene(history[historyIndex]); } }
+
+function initKeyboardShortcuts() {
+    window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+        if (!document.getElementById('editor-view').classList.contains('active')) return;
+        const key = e.key.toLowerCase();
+        if (e.ctrlKey || e.metaKey) {
+            if (key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+            else if ((key === 'z' && e.shiftKey) || key === 'y') { e.preventDefault(); redo(); }
+            else if (key === 'd') { e.preventDefault(); duplicateSelected(); }
+            else if (key === 'g' && !e.shiftKey) { e.preventDefault(); groupSelected(); }
+            else if (key === 'g' && e.shiftKey) { e.preventDefault(); ungroupSelected(); }
+            else if (key === 's') { e.preventDefault(); autoSave(); alert('Project Saved!'); }
+        } else {
+            if (key === 'g') setMode('translate');
+            else if (key === 'r') setMode('rotate');
+            else if (key === 's') setMode('scale');
+            else if (key === 'f') focusCamera();
+            else if (key === 'delete' || key === 'backspace') deleteSelected();
+        }
+    });
+}
+
+function pushHistory() {
+    if (isRestoringState) return;
+    const state = JSON.stringify(serializeScene());
+    if (history.length > 0 && history[historyIndex] === state) return;
+    history = history.slice(0, historyIndex + 1);
+    history.push(state);
+    if (history.length > MAX_HISTORY) history.shift();
+    historyIndex = history.length - 1;
+    autoSave();
+}
+function undo() { if (historyIndex > 0) { historyIndex--; restoreScene(JSON.parse(history[historyIndex])); } }
+function redo() { if (historyIndex < history.length - 1) { historyIndex++; restoreScene(JSON.parse(history[historyIndex])); } }
 
 function serializeScene() { 
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     return { 
-        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray() })), 
+        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null })), 
         groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray() })) 
     }; 
 }
@@ -197,12 +560,20 @@ function restoreScene(state) {
     const tempMeshes = [];
     state.meshes.forEach(mData => {
         let geo;
-        if (mData.rockAmount > 0 && mData.rockPoints) { geo = new ConvexGeometry(mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]))); } 
-        else { geo = createGeometry(mData.type, mData.detail); }
-        const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe });
+        if (mData.type === 'terrain') {
+            const t = mData.terData || { height: 2, rough: 1, flow: 0 };
+            geo = createTerrainGeometry(t.height, t.rough, t.flow).geo;
+        } else if (mData.type === 'plane') {
+            geo = new THREE.PlaneGeometry(1, 1, mData.detail, mData.detail);
+        } else if (mData.rockAmount > 0 && mData.rockPoints) { 
+            geo = new ConvexGeometry(mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2]))); 
+        } else { 
+            geo = createGeometry(mData.type, mData.detail); 
+        }
+        const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe, side: mData.type === 'plane' ? THREE.DoubleSide : THREE.FrontSide });
         const m = new THREE.Mesh(geo, mat);
         m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
-        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null };
+        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null };
         tempMeshes.push(m);
     });
 
@@ -212,124 +583,234 @@ function restoreScene(state) {
     isRestoringState = false; updateCode(); 
 }
 
-window.exportScene = function() { const dataStr = JSON.stringify(serializeScene(), null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "ai_model_scene.json"; a.click(); URL.revokeObjectURL(url); }
-window.importScene = function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { restoreScene(JSON.parse(e.target.result)); pushHistory(); } catch (err) { alert("Invalid file"); } }; reader.readAsText(file); event.target.value = ""; }
-window.toggleFullscreen = function() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); setTimeout(onWindowResize, 100); }
-window.focusCamera = function() { if (meshes.length === 0 && groups.length === 0) { camera.position.set(6, 5, 6); orbitControls.target.set(0, 0, 0); orbitControls.update(); return; } const box = new THREE.Box3(); [...meshes, ...groups].forEach(obj => box.expandByObject(obj)); const center = box.getCenter(new THREE.Vector3()); const size = box.getSize(new THREE.Vector3()); const maxDim = Math.max(size.x, size.y, size.z); const fov = camera.fov * (Math.PI / 180); let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)); cameraZ *= 1.8; camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ); orbitControls.target.set(center.x, center.y, center.z); orbitControls.update(); }
-window.addShape = function(type) { const material = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 1, metalness: 0 }); const mesh = new THREE.Mesh(createGeometry(type, 32), material); mesh.position.y = 0.5; mesh.userData = { shapeType: type, detail: 32, rockAmount: 0, isGrouped: false, rockPoints: null }; scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode(); }
-function createGeometry(type, detail) { const d = Math.max(3, Math.floor(detail)); const polyDetail = Math.max(0, Math.floor(d / 16)); switch(type) { case 'box': return new THREE.BoxGeometry(1, 1, 1, d, d, d); case 'sphere': return new THREE.SphereGeometry(0.5, d, d); case 'cylinder': return new THREE.CylinderGeometry(0.5, 0.5, 1, d); case 'cone': return new THREE.ConeGeometry(0.5, 1, d); case 'torus': return new THREE.TorusGeometry(0.4, 0.15, Math.max(Math.floor(d/2), 3), d); case 'torusKnot': return new THREE.TorusKnotGeometry(0.3, 0.1, Math.max(d*2, 8), Math.max(Math.floor(d/2), 3)); case 'dodecahedron': return new THREE.DodecahedronGeometry(0.5, polyDetail); case 'icosahedron': return new THREE.IcosahedronGeometry(0.5, polyDetail); case 'octahedron': return new THREE.OctahedronGeometry(0.5, polyDetail); case 'tetrahedron': return new THREE.TetrahedronGeometry(0.5, polyDetail); } }
+// --- Shape & Terrain Ops ---
+function addShape(type) { 
+    const material = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 1, metalness: 0, side: type === 'plane' ? THREE.DoubleSide : THREE.FrontSide }); 
+    const mesh = new THREE.Mesh(createGeometry(type, 32), material); 
+    mesh.position.y = 0.5; 
+    mesh.userData = { shapeType: type, detail: 32, rockAmount: 0, isGrouped: false, rockPoints: null, terData: null }; 
+    scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode(); 
+}
+
+function addTerrain() {
+    const tData = { height: 2, rough: 0.5, flow: 0.5 };
+    const { geo, points } = createTerrainGeometry(tData.height, tData.rough, tData.flow);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x4a7c2e, roughness: 1, metalness: 0 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.y = -5; // Center the 20-unit depth terrain
+    mesh.userData = { shapeType: 'terrain', detail: 32, rockAmount: 0, isGrouped: false, rockPoints: points, terData: tData };
+    scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode();
+}
+
+function hash(x, y) {
+    let h = x * 374761393 + y * 668265263;
+    h = (h ^ (h >> 13)) * 1274126177;
+    return ((h ^ (h >> 16)) >>> 0) / 4294967295;
+}
+
+function smoothNoise(x, y) {
+    const xi = Math.floor(x);
+    const yi = Math.floor(y);
+    const xf = x - xi;
+    const yf = y - yi;
+    const a = hash(xi, yi);
+    const b = hash(xi + 1, yi);
+    const c = hash(xi, yi + 1);
+    const d = hash(xi + 1, yi + 1);
+    const u = xf * xf * (3 - 2 * xf);
+    const v = yf * yf * (3 - 2 * yf);
+    return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
+}
+
+function createTerrainGeometry(height, rough, jagged) {
+    const size = 40, depth = 20, segs = 40;
+    // 3D Volumetric Terrain (Cuboid)
+    const geo = new THREE.BoxGeometry(size, depth, size, segs, 1, segs);
+    const pos = geo.attributes.position;
+    const points = [];
+    for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        if (pos.getY(i) > 0) { // Only deform the top face
+            let y = smoothNoise(x * rough, z * rough) * height * 2 - height;
+            y += (smoothNoise(x * rough * 3, z * rough * 3) - 0.5) * height * 0.5; // detail
+            y += (Math.random() - 0.5) * jagged; // jagged spikes
+            pos.setY(i, y + depth/2); // Add half depth to account for box centering
+        }
+        points.push(new THREE.Vector3(x, pos.getY(i), z));
+    }
+    geo.computeVertexNormals();
+    return { geo, points };
+}
+
+function updateTerrain() {
+    if (!selectedMesh || selectedMesh.userData.shapeType !== 'terrain') return;
+    const h = parseFloat(document.getElementById('ter-height').value);
+    const r = parseFloat(document.getElementById('ter-rough').value);
+    const j = parseFloat(document.getElementById('ter-flow').value); 
+    selectedMesh.userData.terData = { height: h, rough: r, flow: j };
+    const { geo, points } = createTerrainGeometry(h, r, j);
+    selectedMesh.geometry.dispose();
+    selectedMesh.geometry = geo;
+    selectedMesh.userData.rockPoints = points;
+    updateCode();
+}
+
+function createGeometry(type, detail) { 
+    const d = Math.max(3, Math.floor(detail)); const polyDetail = Math.max(0, Math.floor(d / 16)); 
+    switch(type) { 
+        case 'box': return new THREE.BoxGeometry(1, 1, 1, d, d, d); 
+        case 'sphere': return new THREE.SphereGeometry(0.5, d, d); 
+        case 'cylinder': return new THREE.CylinderGeometry(0.5, 0.5, 1, d); 
+        case 'cone': return new THREE.ConeGeometry(0.5, 1, d); 
+        case 'torus': return new THREE.TorusGeometry(0.4, 0.15, Math.max(Math.floor(d/2), 3), d); 
+        case 'torusKnot': return new THREE.TorusKnotGeometry(0.3, 0.1, Math.max(d*2, 8), Math.max(Math.floor(d/2), 3)); 
+        case 'dodecahedron': return new THREE.DodecahedronGeometry(0.5, polyDetail); 
+        case 'icosahedron': return new THREE.IcosahedronGeometry(0.5, polyDetail); 
+        case 'octahedron': return new THREE.OctahedronGeometry(0.5, polyDetail); 
+        case 'tetrahedron': return new THREE.TetrahedronGeometry(0.5, polyDetail); 
+        case 'plane': return new THREE.PlaneGeometry(1, 1, d, d);
+    } 
+}
 function createRockGeometry(type, detail, rockAmount) { const baseDetail = type === 'box' ? Math.max(detail, 4) : Math.max(detail, 8); const baseGeo = createGeometry(type, baseDetail); const pos = baseGeo.attributes.position; const points = []; const tempV = new THREE.Vector3(); for (let i = 0; i < pos.count; i++) { tempV.fromBufferAttribute(pos, i); if (Math.random() < rockAmount / 100) tempV.multiplyScalar(Math.random() * 0.6 + 0.2); points.push(tempV.clone()); } const rockGeo = new ConvexGeometry(points); baseGeo.dispose(); return { geo: rockGeo, points: points }; }
 
-window.changeDetail = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { const detail = parseInt(val); selectedMesh.userData.detail = detail; selectedMesh.geometry.dispose(); if (selectedMesh.userData.rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, detail, selectedMesh.userData.rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, detail); } updateCode(); } }
-window.changeRock = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { const rockAmount = parseInt(val); selectedMesh.userData.rockAmount = rockAmount; selectedMesh.geometry.dispose(); if (rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail, rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail); selectedMesh.userData.rockPoints = null; } updateCode(); } }
-window.changeRoughness = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.roughness = val / 100; updateCode(); } }
-window.changeMetalness = function(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.metalness = val / 100; updateCode(); } }
-window.updateColor = function() { if (selectedMesh && meshes.includes(selectedMesh)) { const h = document.getElementById('hue-slider').value, s = document.getElementById('sat-slider').value, l = document.getElementById('light-slider').value; document.getElementById('sat-slider').style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`; document.getElementById('light-slider').style.background = `linear-gradient(to right, hsl(${h}, ${s}%, 0%), hsl(${h}, ${s}%, 50%), hsl(${h}, ${s}%, 100%))`; selectedMesh.material.color.setHSL(h/360, s/100, l/100); updateCode(); } }
-window.toggleWireframe = function() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; updateCode(); } }
-window.updateTransform = function() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); updateCode(); } }
-function syncSliders() { if (!selectedMesh) return; document.getElementById('pos-x').value = selectedMesh.position.x; document.getElementById('pos-y').value = selectedMesh.position.y; document.getElementById('pos-z').value = selectedMesh.position.z; document.getElementById('rot-x').value = selectedMesh.rotation.x; document.getElementById('rot-y').value = selectedMesh.rotation.y; document.getElementById('rot-z').value = selectedMesh.rotation.z; document.getElementById('scale-x').value = selectedMesh.scale.x; document.getElementById('scale-y').value = selectedMesh.scale.y; document.getElementById('scale-z').value = selectedMesh.scale.z; }
-window.resetTransform = function() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); updateCode(); pushHistory(); } }
+function changeDetail(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const detail = parseInt(val); selectedMesh.userData.detail = detail; selectedMesh.geometry.dispose(); if (selectedMesh.userData.rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, detail, selectedMesh.userData.rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, detail); } updateCode(); } }
+function changeRock(val) { if (selectedMesh && meshes.includes(selectedMesh) && selectedMesh.userData.shapeType !== 'terrain') { const rockAmount = parseInt(val); selectedMesh.userData.rockAmount = rockAmount; selectedMesh.geometry.dispose(); if (rockAmount > 0) { const r = createRockGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail, rockAmount); selectedMesh.geometry = r.geo; selectedMesh.userData.rockPoints = r.points; } else { selectedMesh.geometry = createGeometry(selectedMesh.userData.shapeType, selectedMesh.userData.detail); selectedMesh.userData.rockPoints = null; } updateCode(); } }
+function changeRoughness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.roughness = val / 100; updateCode(); } }
+function changeMetalness(val) { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.metalness = val / 100; updateCode(); } }
 
-window.duplicateSelected = function() {
-    if (!selectedMesh) return;
-    if (groups.includes(selectedMesh)) {
-        const orig = selectedMesh;
-        const newGroup = new THREE.Group();
-        newGroup.userData.isGroup = true;
-        orig.children.forEach(child => {
-            const newMesh = child.clone(); newMesh.material = child.material.clone();
-            newMesh.userData = JSON.parse(JSON.stringify(child.userData));
-            if (child.userData.rockPoints) newMesh.userData.rockPoints = child.userData.rockPoints.map(v => v.clone());
-            newGroup.attach(newMesh);
+function renderPalette() {
+    const container = document.getElementById('palette-swatches');
+    container.innerHTML = '';
+    recentColors.forEach(color => {
+        const div = document.createElement('div');
+        div.className = 'palette-swatch';
+        div.style.background = color;
+        div.addEventListener('click', () => {
+            if (selectedMesh && meshes.includes(selectedMesh)) {
+                selectedMesh.material.color.set(color);
+                const hsl = {}; new THREE.Color(color).getHSL(hsl);
+                document.getElementById('hue-slider').value = hsl.h * 360;
+                document.getElementById('sat-slider').value = hsl.s * 100;
+                document.getElementById('light-slider').value = hsl.l * 100;
+                updateColor();
+            }
         });
-        newGroup.position.x += 1.5; scene.add(newGroup); groups.push(newGroup);
-        selectObject(newGroup);
-    } else if (meshes.includes(selectedMesh)) {
-        const orig = selectedMesh; const newMesh = orig.clone(); newMesh.material = orig.material.clone(); newMesh.position.x += 1.5; 
-        newMesh.userData = JSON.parse(JSON.stringify(orig.userData)); if (orig.userData.rockPoints) newMesh.userData.rockPoints = orig.userData.rockPoints.map(v => v.clone());
-        scene.add(newMesh); meshes.push(newMesh); selectObject(newMesh);
+        container.appendChild(div);
+    });
+}
+
+function updateColor() { 
+    if (selectedMesh && meshes.includes(selectedMesh)) { 
+        const h = document.getElementById('hue-slider').value, s = document.getElementById('sat-slider').value, l = document.getElementById('light-slider').value; 
+        document.getElementById('sat-slider').style.background = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`; 
+        document.getElementById('light-slider').style.background = `linear-gradient(to right, hsl(${h}, ${s}%, 0%), hsl(${h}, ${s}%, 50%), hsl(${h}, ${s}%, 100%))`; 
+        selectedMesh.material.color.setHSL(h/360, s/100, l/100); 
+        
+        const hex = '#' + selectedMesh.material.color.getHexString();
+        if (!recentColors.includes(hex)) {
+            recentColors.unshift(hex);
+            if (recentColors.length > 8) recentColors.pop();
+            localStorage.setItem('recent_colors', JSON.stringify(recentColors));
+            renderPalette();
+        }
+        updateCode(); 
+    } 
+}
+function toggleWireframe() { if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.material.wireframe = !selectedMesh.material.wireframe; updateCode(); } }
+function updateTransform() { if (selectedMesh) { selectedMesh.position.set(parseFloat(document.getElementById('pos-x').value), parseFloat(document.getElementById('pos-y').value), parseFloat(document.getElementById('pos-z').value)); selectedMesh.rotation.set(parseFloat(document.getElementById('rot-x').value), parseFloat(document.getElementById('rot-y').value), parseFloat(document.getElementById('rot-z').value)); selectedMesh.scale.set(parseFloat(document.getElementById('scale-x').value), parseFloat(document.getElementById('scale-y').value), parseFloat(document.getElementById('scale-z').value)); updateCode(); } }
+function syncSliders() { if (!selectedMesh) return; document.getElementById('pos-x').value = selectedMesh.position.x; document.getElementById('pos-y').value = selectedMesh.position.y; document.getElementById('pos-z').value = selectedMesh.position.z; document.getElementById('rot-x').value = selectedMesh.rotation.x; document.getElementById('rot-y').value = selectedMesh.rotation.y; document.getElementById('rot-z').value = selectedMesh.rotation.z; document.getElementById('scale-x').value = selectedMesh.scale.x; document.getElementById('scale-y').value = selectedMesh.scale.y; document.getElementById('scale-z').value = selectedMesh.scale.z; }
+function resetTransform() { if (selectedMesh) { selectedMesh.position.set(0, 0.5, 0); selectedMesh.rotation.set(0, 0, 0); selectedMesh.scale.set(1, 1, 1); syncSliders(); updateCode(); pushHistory(); } }
+function duplicateSelected() { if (!selectedMesh) return; if (groups.includes(selectedMesh)) { const orig = selectedMesh; const newGroup = new THREE.Group(); newGroup.userData.isGroup = true; orig.children.forEach(child => { const newMesh = child.clone(); newMesh.material = child.material.clone(); newMesh.userData = JSON.parse(JSON.stringify(child.userData)); if (child.userData.rockPoints) newMesh.userData.rockPoints = child.userData.rockPoints.map(v => v.clone()); newGroup.attach(newMesh); }); newGroup.position.x += 1.5; scene.add(newGroup); groups.push(newGroup); selectObject(newGroup); } else if (meshes.includes(selectedMesh)) { const orig = selectedMesh; const newMesh = orig.clone(); newMesh.material = orig.material.clone(); newMesh.position.x += 1.5; newMesh.userData = JSON.parse(JSON.stringify(orig.userData)); if (orig.userData.rockPoints) newMesh.userData.rockPoints = orig.userData.rockPoints.map(v => v.clone()); scene.add(newMesh); meshes.push(newMesh); selectObject(newMesh); } pushHistory(); updateCode(); }
+function groupSelected() { if (meshes.length === 0) return; const group = new THREE.Group(); group.userData.isGroup = true; const toGroup = meshes.filter(m => !m.userData.isGrouped); if (toGroup.length === 0) return; toGroup.forEach(m => { group.attach(m); m.userData.isGrouped = true; }); meshes = meshes.filter(m => !toGroup.includes(m)); groups.push(group); scene.add(group); selectObject(group); pushHistory(); updateCode(); }
+function ungroupSelected() { if (!selectedMesh || !groups.includes(selectedMesh)) return; const group = selectedMesh; const children = [...group.children]; children.forEach(child => { scene.attach(child); child.userData.isGrouped = false; meshes.push(child); }); scene.remove(group); groups = groups.filter(g => g !== group); if (children.length > 0) selectObject(children[0]); else deselectObject(); pushHistory(); updateCode(); }
+function deleteSelected() { if (!selectedMesh) return; if (groups.includes(selectedMesh)) { selectedMesh.children.forEach(child => { scene.remove(child); child.geometry.dispose(); child.material.dispose(); }); scene.remove(selectedMesh); groups = groups.filter(g => g !== selectedMesh); } else if (meshes.includes(selectedMesh)) { scene.remove(selectedMesh); selectedMesh.geometry.dispose(); selectedMesh.material.dispose(); meshes = meshes.filter(m => m !== selectedMesh); } transformControls.detach(); selectedMesh = null; document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden'); pushHistory(); updateCode(); }
+function setMode(mode) { 
+    currentMode = mode;
+    if (mode === 'sculpt') {
+        transformControls.detach();
+        orbitControls.enabled = true;
+    } else {
+        if(selectedMesh) transformControls.attach(selectedMesh);
     }
-    pushHistory(); updateCode();
+    document.querySelectorAll('#transform-modes .btn').forEach(btn => btn.classList.remove('active')); 
+    document.getElementById(`btn-${mode}`).classList.add('active'); 
 }
+function selectObject(obj) { 
+    selectedMesh = obj; 
+    if (currentMode !== 'sculpt') transformControls.attach(obj); 
+    document.getElementById('transform-panel').classList.remove('hidden'); syncSliders(); 
+    
+    document.getElementById('prop-color').classList.add('hidden');
+    document.getElementById('prop-detail').classList.add('hidden');
+    document.getElementById('prop-rock').classList.add('hidden');
+    document.getElementById('prop-terrain').classList.add('hidden');
 
-window.groupSelected = function() { 
-    if (meshes.length === 0) return; 
-    const group = new THREE.Group(); group.userData.isGroup = true; 
-    const toGroup = meshes.filter(m => !m.userData.isGrouped); 
-    if (toGroup.length === 0) return; 
-    toGroup.forEach(m => { group.attach(m); m.userData.isGrouped = true; }); 
-    meshes = meshes.filter(m => !toGroup.includes(m)); // REMOVE from main array so they can't be selected individually!
-    groups.push(group); scene.add(group); selectObject(group); pushHistory(); updateCode(); 
+    if (meshes.includes(obj)) { 
+        document.getElementById('props-panel').classList.remove('hidden');
+        const color = obj.material.color.getHSL({}); 
+        document.getElementById('hue-slider').value = color.h * 360; document.getElementById('sat-slider').value = color.s * 100; document.getElementById('light-slider').value = color.l * 100; updateColor(); 
+        
+        if (obj.userData.shapeType === 'terrain') {
+            document.getElementById('prop-color').classList.remove('hidden');
+            document.getElementById('prop-terrain').classList.remove('hidden');
+            const t = obj.userData.terData;
+            document.getElementById('ter-height').value = t.height;
+            document.getElementById('ter-rough').value = t.rough;
+            document.getElementById('ter-flow').value = t.flow;
+        } else {
+            document.getElementById('prop-color').classList.remove('hidden');
+            document.getElementById('prop-detail').classList.remove('hidden');
+            document.getElementById('prop-rock').classList.remove('hidden');
+            document.getElementById('detail-slider').value = obj.userData.detail; 
+            document.getElementById('noise-slider').value = obj.userData.rockAmount;
+        }
+    } else { document.getElementById('props-panel').classList.add('hidden'); } 
 }
-
-window.ungroupSelected = function() {
-    if (!selectedMesh || !groups.includes(selectedMesh)) return;
-    const group = selectedMesh; const children = [...group.children];
-    children.forEach(child => { scene.attach(child); child.userData.isGrouped = false; meshes.push(child); }); // ADD back to main array
-    scene.remove(group); groups = groups.filter(g => g !== group);
-    if (children.length > 0) selectObject(children[0]); else deselectObject();
-    pushHistory(); updateCode();
-}
-
-window.deleteSelected = function() {
-    if (!selectedMesh) return;
-    if (groups.includes(selectedMesh)) { 
-        selectedMesh.children.forEach(child => { scene.remove(child); child.geometry.dispose(); child.material.dispose(); }); 
-        scene.remove(selectedMesh); groups = groups.filter(g => g !== selectedMesh); 
-    } else if (meshes.includes(selectedMesh)) { 
-        scene.remove(selectedMesh); selectedMesh.geometry.dispose(); selectedMesh.material.dispose(); meshes = meshes.filter(m => m !== selectedMesh); 
-    }
-    transformControls.detach(); selectedMesh = null;
-    document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden');
-    pushHistory(); updateCode();
-}
-window.setMode = function(mode) { transformControls.setMode(mode); document.querySelectorAll('#transform-modes .btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`btn-${mode}`).classList.add('active'); }
-function selectObject(obj) { selectedMesh = obj; transformControls.attach(obj); document.getElementById('transform-panel').classList.remove('hidden'); syncSliders(); if (meshes.includes(obj)) { document.getElementById('props-panel').classList.remove('hidden'); const color = obj.material.color.getHSL({}); document.getElementById('hue-slider').value = color.h * 360; document.getElementById('sat-slider').value = color.s * 100; document.getElementById('light-slider').value = color.l * 100; document.getElementById('detail-slider').value = obj.userData.detail; document.getElementById('noise-slider').value = obj.userData.rockAmount; updateColor(); } else { document.getElementById('props-panel').classList.add('hidden'); } }
 function deselectObject() { selectedMesh = null; transformControls.detach(); document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden'); }
-window.toggleCodePanel = function() { document.getElementById('code-panel').classList.toggle('visible'); onWindowResize(); }
-window.copyCode = function() { const ct = document.getElementById('code-output'); ct.select(); document.execCommand('copy'); const b = document.querySelector('#code-header .btn span'); b.innerText='Copied!'; setTimeout(()=>b.innerText='Copy',1500); }
+function toggleCodePanel() { document.getElementById('code-panel').classList.toggle('visible'); onWindowResize(); }
+function copyCode() { const ct = document.getElementById('code-output'); ct.select(); document.execCommand('copy'); const b = document.querySelector('#code-header .btn span'); b.innerText='Copied!'; setTimeout(()=>b.innerText='Copy',1500); }
+function focusCamera() { if (meshes.length === 0 && groups.length === 0) { camera.position.set(10, 8, 10); orbitControls.target.set(0, 0, 0); orbitControls.update(); return; } const box = new THREE.Box3(); [...meshes, ...groups].forEach(obj => box.expandByObject(obj)); const center = box.getCenter(new THREE.Vector3()); const size = box.getSize(new THREE.Vector3()); const maxDim = Math.max(size.x, size.y, size.z); const fov = camera.fov * (Math.PI / 180); let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)); cameraZ *= 1.8; camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ); orbitControls.target.set(center.x, center.y, center.z); orbitControls.update(); }
+function exportScene() { const dataStr = JSON.stringify(serializeScene(), null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "ai_model_scene.json"; a.click(); URL.revokeObjectURL(url); }
+function importScene(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { restoreScene(JSON.parse(e.target.result)); pushHistory(); } catch (err) { alert("Invalid file"); } }; reader.readAsText(file); event.target.value = ""; }
+function toggleFullscreen() { 
+    if (!document.fullscreenElement) { 
+        document.documentElement.requestFullscreen().then(() => setTimeout(onWindowResize, 200)); 
+    } else { 
+        document.exitFullscreen().then(() => setTimeout(onWindowResize, 200)); 
+    } 
+}
 
-// MASSIVELY OPTIMIZED CODE GENERATOR (Uses flat arrays instead of Vector3 objects)
 function updateCode() {
     let code = `// Three.js Model Code\n// Generated by AI Model Builder\n`;
     code += `import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';\n`;
     code += `const V=(a)=>{let r=[];for(let i=0;i<a.length;i+=3)r.push(new THREE.Vector3(a[i],a[i+1],a[i+2]));return r;}\n\n`;
     if (meshes.length === 0 && groups.length === 0) { code += `// No objects created yet.`; document.getElementById('code-output').value = code; return; }
-
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
-
     const geoCache = {}; const matCache = {}; let meshCode = "";
     allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
-
     let groupCode = "";
-    if (meshes.length > 0) {
-        groupCode += `const auto_group = new THREE.Group();\n`;
-        groupCode += `auto_group.add(${meshes.map(m => `mesh_${allMeshes.indexOf(m)}`).join(",")});\n`;
-        groupCode += `scene.add(auto_group);\n\n`;
-    }
-    groups.forEach((g, gi) => {
-        if (g.children.length === 0) return; 
-        groupCode += `const group_${gi} = new THREE.Group();\n`;
-        groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`;
-        const p = g.position, r = g.rotation, s = g.scale;
-        groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`;
-        groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`;
-        groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`;
-        groupCode += `scene.add(group_${gi});\n\n`;
-    });
-
+    if (meshes.length > 0) { groupCode += `const auto_group = new THREE.Group();\n`; groupCode += `auto_group.add(${meshes.map(m => `mesh_${allMeshes.indexOf(m)}`).join(",")});\n`; groupCode += `scene.add(auto_group);\n\n`; }
+    groups.forEach((g, gi) => { if (g.children.length === 0) return; groupCode += `const group_${gi} = new THREE.Group();\n`; groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`; const p = g.position, r = g.rotation, s = g.scale; groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`; groupCode += `scene.add(group_${gi});\n\n`; });
     let finalCode = code; Object.values(geoCache).forEach(c => finalCode += c.code); finalCode += "\n"; Object.values(matCache).forEach(c => finalCode += c.code); finalCode += "\n"; finalCode += meshCode; finalCode += groupCode;
     document.getElementById('code-output').value = finalCode;
 }
 
 function getCacheVars(mesh, index, geoCache, matCache) {
     let geoSig, geoVar, geoCode;
-    if (mesh.userData.rockAmount > 0 && mesh.userData.rockPoints) {
+    if (mesh.userData.shapeType === 'terrain') {
+        geoSig = 'terrain_geo';
+        if (!geoCache[geoSig]) {
+            geoVar = `geo_terrain`;
+            const yPts = mesh.userData.rockPoints.map(p => p.y.toFixed(2)).join(",");
+            geoCode = `const ${geoVar} = new THREE.BoxGeometry(40,20,40,40,1,40);\nconst pos_${geoVar} = ${geoVar}.attributes.position;\nconst y_arr = [${yPts}];\nfor(let i=0; i<pos_${geoVar}.count; i++) pos_${geoVar}.setY(i, y_arr[i]);\n${geoVar}.computeVertexNormals();\n`;
+            geoCache[geoSig] = { var: geoVar, code: geoCode };
+        }
+    } else if (mesh.userData.rockAmount > 0 && mesh.userData.rockPoints) {
         geoSig = mesh.userData.rockPoints.map(p => `${p.x.toFixed(3)}_${p.y.toFixed(3)}_${p.z.toFixed(3)}`).join('|');
         if (!geoCache[geoSig]) {
             geoVar = `geo_${Object.keys(geoCache).length}`;
-            // FLAT ARRAY MAGIC: V([x,y,z, x,y,z...])
             const ptsStr = mesh.userData.rockPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}`).join(",");
             geoCode = `const ${geoVar} = new ConvexGeometry(V([${ptsStr}]));\n`;
             geoCache[geoSig] = { var: geoVar, code: geoCode };
@@ -343,11 +824,16 @@ function getCacheVars(mesh, index, geoCache, matCache) {
         }
     }
     const hsl = mesh.material.color.getHSL({}); const colorHex = '#' + new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).getHexString(); const rgh = mesh.material.roughness.toFixed(2), met = mesh.material.metalness.toFixed(2), wf = mesh.material.wireframe;
-    let matSig = `${colorHex}_${rgh}_${met}_${wf}`; if (!matCache[matSig]) { let matVar = `mat_${Object.keys(matCache).length}`; let matCode = `const ${matVar} = new THREE.MeshStandardMaterial({ color: "${colorHex}", roughness: ${rgh}, metalness: ${met}${wf ? ', wireframe: true' : ''} });\n`; matCache[matSig] = { var: matVar, code: matCode }; }
+    let matSig = `${colorHex}_${rgh}_${met}_${wf}_${mesh.userData.shapeType === 'plane' ? 'ds' : 'fs'}`; 
+    if (!matCache[matSig]) { 
+        let matVar = `mat_${Object.keys(matCache).length}`; 
+        let matCode = `const ${matVar} = new THREE.MeshStandardMaterial({ color: "${colorHex}", roughness: ${rgh}, metalness: ${met}${wf ? ', wireframe: true' : ''}${mesh.userData.shapeType === 'plane' ? ', side: THREE.DoubleSide' : ''} });\n`; 
+        matCache[matSig] = { var: matVar, code: matCode }; 
+    }
     return { geoVar: geoCache[geoSig].var, matVar: matCache[matSig].var };
 }
-function formatGeometryArgs(type, detail) { const d = Math.max(3, Math.floor(detail)), polyD = Math.max(0, Math.floor(d / 16)); switch(type) { case 'box': return `1, 1, 1, ${d}, ${d}, ${d}`; case 'sphere': return `0.5, ${d}, ${d}`; case 'cylinder': return `0.5, 0.5, 1, ${d}`; case 'cone': return `0.5, 1, ${d}`; case 'torus': return `0.4, 0.15, ${Math.max(Math.floor(d/2), 3)}, ${d}`; case 'torusKnot': return `0.3, 0.1, ${Math.max(d*2, 8)}, ${Math.max(Math.floor(d/2), 3)}`; case 'dodecahedron': case 'icosahedron': case 'octahedron': case 'tetrahedron': return `0.5, ${polyD}`; default: return ''; } }
-function onWindowResize() { setTimeout(() => { const vp = document.getElementById('viewport'); camera.aspect = vp.clientWidth / vp.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(vp.clientWidth, vp.clientHeight); }, 50); }
+function formatGeometryArgs(type, detail) { const d = Math.max(3, Math.floor(detail)), polyD = Math.max(0, Math.floor(d / 16)); switch(type) { case 'box': return `1, 1, 1, ${d}, ${d}, ${d}`; case 'sphere': return `0.5, ${d}, ${d}`; case 'cylinder': return `0.5, 0.5, 1, ${d}`; case 'cone': return `0.5, 1, ${d}`; case 'torus': return `0.4, 0.15, ${Math.max(Math.floor(d/2), 3)}, ${d}`; case 'torusKnot': return `0.3, 0.1, ${Math.max(d*2, 8)}, ${Math.max(Math.floor(d/2), 3)}`; case 'dodecahedron': case 'icosahedron': case 'octahedron': case 'tetrahedron': return `0.5, ${polyD}`; case 'plane': return `1, 1, ${d}, ${d}`; default: return ''; } }
+function onWindowResize() { setTimeout(() => { const vp = document.getElementById('viewport'); if (!vp) return; const w = vp.clientWidth || window.innerWidth; const h = vp.clientHeight || window.innerHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }, 50); }
 function animate() { requestAnimationFrame(animate); orbitControls.update(); renderer.render(scene, camera); }
 updateCode();
 </script>
