@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Model Builder Studio</title>
+    <title>3D Game Asset Builder</title>
     <style>
         :root {
             --bg-main: #0f0f10; --bg-panel: #18181b; --bg-elevated: #27272a;
@@ -69,6 +69,7 @@
         .axis-label { width: 16px; font-weight: bold; font-size: 16px; flex-shrink: 0; }
         input[type="range"] { width: 100%; accent-color: var(--accent); height: 28px; -webkit-appearance: none; appearance: none; background: var(--bg-elevated); border-radius: 6px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--text-main); cursor: pointer; border: 3px solid var(--bg-panel); }
+        input[type="text"] { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-main); padding: 8px; border-radius: 4px; font-family: 'Inter', sans-serif; }
         #color-picker-container { display: flex; flex-direction: column; gap: 10px; }
         .color-slider { width: 100%; height: 24px; border-radius: 6px; appearance: none; cursor: pointer; background: transparent; -webkit-appearance: none; }
         .color-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 10px; height: 28px; background: var(--text-main); border-radius: 3px; border: 1px solid var(--bg-main); cursor: pointer; }
@@ -95,6 +96,8 @@
         .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
         .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; }
+        .export-menu { display: flex; flex-direction: column; gap: 8px; }
+        .export-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; }
     </style>
 </head>
 <body>
@@ -102,7 +105,7 @@
 <!-- DASHBOARD VIEW -->
 <div id="dashboard-view">
     <div class="dashboard-header">
-        <div class="dashboard-title">3D Model Builder Studio</div>
+        <div class="dashboard-title">3D Game Asset Builder</div>
         <div class="dashboard-actions">
             <button class="dash-btn primary" id="new-asset-btn">+ New Asset</button>
             <button class="dash-btn primary" id="new-terrain-btn">+ New Terrain</button>
@@ -138,7 +141,7 @@
                     <button class="btn btn-icon" id="btn-undo" title="Undo (Ctrl+Z)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>
                     <button class="btn btn-icon" id="btn-redo" title="Redo (Ctrl+Shift+Z)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path></svg></button>
                     <div class="divider"></div>
-                    <button class="btn btn-icon" id="btn-export" title="Export JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
+                    <button class="btn btn-icon" id="btn-export" title="Export"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
                     <button class="btn btn-icon" id="btn-import" title="Import JSON"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></button>
                     <button class="btn btn-icon" id="btn-fullscreen" title="Fullscreen"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
                     <button id="toggle-code-btn" title="Toggle Code Panel"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg></button>
@@ -148,6 +151,7 @@
             <div id="props-panel" class="draggable-panel hidden" style="top: 90px; left: 16px;">
                 <div class="panel-header">Properties</div>
                 <div class="panel-body">
+                    <div id="prop-label" class="prop-group hidden"><span class="prop-label">Part Label (For AI Animation)</span><input type="text" id="part-label-input" placeholder="e.g. Head, LeftArm"></div>
                     <div id="prop-color" class="prop-group"><span class="prop-label">Color (HSL)</span><div id="color-picker-container"><input type="range" min="0" max="360" value="0" class="color-slider" id="hue-slider"><input type="range" min="0" max="100" value="0" class="color-slider" id="sat-slider"><input type="range" min="0" max="100" value="50" class="color-slider" id="light-slider"></div><div class="palette-container" id="palette-swatches"></div></div>
                     <div id="prop-detail" class="prop-group"><span class="prop-label">Segments (Polycount)</span><input type="range" id="detail-slider" min="3" max="64" value="32"></div>
                     <div id="prop-rock" class="prop-group"><span class="prop-label">Rockify (Flat Cuts)</span><input type="range" id="noise-slider" min="0" max="80" value="0"></div>
@@ -178,14 +182,14 @@
             </div>
         </div>
         <div id="code-panel" class="visible">
-            <div id="code-header"><span>AI Export Code</span><button class="btn btn-icon" id="btn-copy-code" title="Copy Code" style="width: auto; padding: 0 12px; font-size: 12px; gap: 6px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg><span>Copy</span></button></div>
+            <div id="code-header"><span>Game Export Code</span><button class="btn btn-icon" id="btn-copy-code" title="Copy Code" style="width: auto; padding: 0 12px; font-size: 12px; gap: 6px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg><span>Copy</span></button></div>
             <textarea id="code-output" readonly></textarea>
         </div>
     </div>
 </div>
 
-<!-- New Project Modal -->
-<div id="new-project-modal" class="modal-overlay">
+<!-- Project Modal -->
+<div id="project-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
             <div class="modal-title" id="modal-title">Create New Project</div>
@@ -195,7 +199,7 @@
             <label class="form-label">Project Name</label>
             <input type="text" id="proj-name-input" class="form-input" placeholder="Untitled Asset">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="category-form-group">
             <label class="form-label">Category</label>
             <select id="proj-cat-input" class="form-select">
                 <option value="Static Prop">Static Prop (Tree/Rock)</option>
@@ -205,12 +209,28 @@
         </div>
         <div id="terrain-dimensions" class="hidden">
             <div class="form-row">
-                <div class="form-group"><label class="form-label">Width (Units)</label><input type="number" id="ter-w-input" class="form-input" value="40" min="10" max="200"></div>
-                <div class="form-group"><label class="form-label">Depth (Units)</label><input type="number" id="ter-d-input" class="form-input" value="20" min="5" max="100"></div>
-                <div class="form-group"><label class="form-label">Length (Units)</label><input type="number" id="ter-h-input" class="form-input" value="40" min="10" max="200"></div>
+                <div class="form-group"><label class="form-label">Width</label><input type="number" id="ter-w-input" class="form-input" value="40" min="10" max="200"></div>
+                <div class="form-group"><label class="form-label">Depth</label><input type="number" id="ter-d-input" class="form-input" value="20" min="5" max="100"></div>
+                <div class="form-group"><label class="form-label">Length</label><input type="number" id="ter-h-input" class="form-input" value="40" min="10" max="200"></div>
             </div>
+            <div class="form-group"><label class="form-label">Segments (Divisions)</label><input type="number" id="ter-segs-input" class="form-input" value="40" min="10" max="100"></div>
         </div>
-        <button class="btn-primary" id="create-project-btn">Create Project</button>
+        <button class="btn-primary" id="save-project-btn">Create Project</button>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div id="export-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Export Project</div>
+            <button class="close-btn" id="close-export-btn">✕</button>
+        </div>
+        <div class="export-menu">
+            <button class="export-btn" id="exp-json-btn">Export as JSON (Save File)</button>
+            <button class="export-btn" id="exp-code-btn">Export as Three.js Code (TXT)</button>
+            <button class="export-btn" id="exp-glb-btn">Export as GLB (3D Model)</button>
+        </div>
     </div>
 </div>
 
@@ -221,22 +241,15 @@
             <div class="modal-title">3D Builder Studio Features</div>
             <button class="close-btn" id="close-help-btn">✕</button>
         </div>
-        <p><strong>Asset Editor:</strong> Build 3D models using primitives and 2D planes (for leaves). Use "Rockify" to make jagged rocks. Group them to form complex structures like trees.</p>
-        <p><strong>Terrain Editor:</strong> Generates a 3D volumetric terrain (Cuboid) for game collisions. Adjust Height, Roughness, and Jaggedness. Use the <strong>Sculpt Tool</strong> to paint grooves, or use the <strong>Flatten</strong> brush to create flat areas for villages.</p>
+        <p><strong>Asset Editor:</strong> Build 3D models using primitives and 2D planes. Use the <strong>Part Label</strong> field to name limbs (Head, LeftArm) so your AI can animate them automatically!</p>
+        <p><strong>Terrain Editor:</strong> Generates a 3D volumetric terrain for game collisions. Use the <strong>Sculpt Tool</strong> to paint grooves, or use the <strong>Flatten</strong> brush to create flat areas for villages.</p>
         <p><strong>Asset Importer:</strong> In Terrain mode, use the dropdown to spawn your saved Asset projects directly onto the map.</p>
-        <p><strong>Code Generation:</strong> Copies clean, minified Three.js code using flat arrays and geometry caching, ready for your AI.</p>
         <h3>Controls & Shortcuts</h3>
         <ul style="font-size:14px; line-height:1.6; color:var(--text-dim);">
-            <li><strong>G</strong>: Move</li>
-            <li><strong>R</strong>: Rotate</li>
-            <li><strong>S</strong>: Scale</li>
-            <li><strong>F</strong>: Focus Camera</li>
-            <li><strong>Del</strong>: Delete Object</li>
-            <li><strong>Ctrl+Z</strong>: Undo</li>
-            <li><strong>Ctrl+Shift+Z</strong>: Redo</li>
-            <li><strong>Ctrl+D</strong>: Duplicate</li>
-            <li><strong>Ctrl+G</strong>: Group</li>
-            <li><strong>Ctrl+Shift+G</strong>: Ungroup</li>
+            <li><strong>G</strong>: Move | <strong>R</strong>: Rotate | <strong>S</strong>: Scale</li>
+            <li><strong>F</strong>: Focus Camera | <strong>Del</strong>: Delete Object</li>
+            <li><strong>Ctrl+Z</strong>: Undo | <strong>Ctrl+Shift+Z</strong>: Redo</li>
+            <li><strong>Ctrl+D</strong>: Duplicate | <strong>Ctrl+G</strong>: Group</li>
         </ul>
     </div>
 </div>
@@ -247,6 +260,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 let scene, camera, renderer, orbitControls, transformControls;
 let meshes = []; let groups = []; let selectedMesh = null;
@@ -259,22 +273,29 @@ let isPointerDown = false;
 let isSculpting = false;
 let recentColors = JSON.parse(localStorage.getItem('recent_colors') || '[]');
 let pendingProjectType = null;
+let editingProjectId = null;
 let codeUpdateTimer = null;
 
 init(); animate(); initDraggablePanels(); initKeyboardShortcuts(); setupEventListeners(); renderDashboard();
 
 function setupEventListeners() {
-    document.getElementById('new-asset-btn').addEventListener('click', () => openNewProjectModal('asset'));
-    document.getElementById('new-terrain-btn').addEventListener('click', () => openNewProjectModal('terrain'));
+    document.getElementById('new-asset-btn').addEventListener('click', () => openProjectModal('asset'));
+    document.getElementById('new-terrain-btn').addEventListener('click', () => openProjectModal('terrain'));
     document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('visible'));
     document.getElementById('close-help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.remove('visible'));
     
-    document.getElementById('close-modal-btn').addEventListener('click', () => document.getElementById('new-project-modal').classList.remove('visible'));
+    document.getElementById('close-modal-btn').addEventListener('click', () => document.getElementById('project-modal').classList.remove('visible'));
     document.getElementById('proj-cat-input').addEventListener('change', (e) => {
         if (e.target.value === 'Terrain') document.getElementById('terrain-dimensions').classList.remove('hidden');
         else document.getElementById('terrain-dimensions').classList.add('hidden');
     });
-    document.getElementById('create-project-btn').addEventListener('click', handleCreateProject);
+    document.getElementById('save-project-btn').addEventListener('click', handleSaveProject);
+    
+    document.getElementById('btn-export').addEventListener('click', () => document.getElementById('export-modal').classList.add('visible'));
+    document.getElementById('close-export-btn').addEventListener('click', () => document.getElementById('export-modal').classList.remove('visible'));
+    document.getElementById('exp-json-btn').addEventListener('click', () => downloadFile(JSON.stringify(serializeScene(), null, 2), 'project.json', 'application/json'));
+    document.getElementById('exp-code-btn').addEventListener('click', () => downloadFile(document.getElementById('code-output').value, 'project.txt', 'text/plain'));
+    document.getElementById('exp-glb-btn').addEventListener('click', exportGLB);
     
     document.getElementById('btn-translate').addEventListener('click', () => setMode('translate'));
     document.getElementById('btn-rotate').addEventListener('click', () => setMode('rotate'));
@@ -298,12 +319,14 @@ function setupEventListeners() {
     
     document.getElementById('btn-undo').addEventListener('click', undo);
     document.getElementById('btn-redo').addEventListener('click', redo);
-    document.getElementById('btn-export').addEventListener('click', exportScene);
     document.getElementById('btn-import').addEventListener('click', () => document.getElementById('file-input').click());
     document.getElementById('file-input').addEventListener('change', importScene);
     document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
     document.getElementById('toggle-code-btn').addEventListener('click', toggleCodePanel);
     
+    document.getElementById('part-label-input').addEventListener('input', (e) => {
+        if (selectedMesh && meshes.includes(selectedMesh)) { selectedMesh.userData.label = e.target.value; scheduleCodeUpdate(); }
+    });
     document.getElementById('hue-slider').addEventListener('input', updateColor);
     document.getElementById('sat-slider').addEventListener('input', updateColor);
     document.getElementById('light-slider').addEventListener('input', updateColor);
@@ -354,12 +377,10 @@ function init() {
         raycaster.setFromCamera(mouse, camera);
         
         if (currentMode === 'sculpt') {
-            if (selectedMesh && selectedMesh.userData.shapeType === 'terrain') {
-                const intersects = raycaster.intersectObject(selectedMesh);
-                if (intersects.length > 0) {
-                    isSculpting = true;
-                    orbitControls.enabled = false; 
-                }
+            const ter = meshes.find(m => m.userData.shapeType === 'terrain');
+            if (ter) {
+                const intersects = raycaster.intersectObject(ter);
+                if (intersects.length > 0) { isSculpting = true; orbitControls.enabled = false; }
             }
             return; 
         }
@@ -372,15 +393,17 @@ function init() {
 
     renderer.domElement.addEventListener('pointermove', (event) => {
         if (!isPointerDown) return;
-        if (currentMode === 'sculpt' && isSculpting && selectedMesh && selectedMesh.userData.shapeType === 'terrain') {
+        if (currentMode === 'sculpt' && isSculpting) {
+            const ter = meshes.find(m => m.userData.shapeType === 'terrain');
+            if (!ter) return;
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(selectedMesh);
+            const intersects = raycaster.intersectObject(ter);
             if (intersects.length > 0) {
                 const face = intersects[0].face;
-                const geo = selectedMesh.geometry;
+                const geo = ter.geometry;
                 const pos = geo.attributes.position;
                 const dir = document.getElementById('sculpt-dir').value;
                 const strength = parseFloat(document.getElementById('sculpt-strength').value);
@@ -392,7 +415,7 @@ function init() {
                     else if (dir === 'down') newY = y - strength;
                     else if (dir === 'flatten') newY = y + (0 - y) * strength; 
                     pos.setY(vIdx, newY);
-                    if(selectedMesh.userData.rockPoints[vIdx]) selectedMesh.userData.rockPoints[vIdx].y = newY;
+                    if(ter.userData.rockPoints[vIdx]) ter.userData.rockPoints[vIdx].y = newY;
                 });
                 pos.needsUpdate = true;
                 geo.computeVertexNormals();
@@ -402,12 +425,7 @@ function init() {
 
     renderer.domElement.addEventListener('pointerup', () => { 
         isPointerDown = false; 
-        if (isSculpting) {
-            isSculpting = false;
-            orbitControls.enabled = true;
-            pushHistory();
-            updateCode(); // Generate code once when done sculpting
-        }
+        if (isSculpting) { isSculpting = false; orbitControls.enabled = true; pushHistory(); updateCode(); }
     });
 
     const smartPushHistory = (e) => { if (!isRestoringState && (e.target.tagName === 'CANVAS' || e.target.tagName === 'INPUT' || e.target.classList.contains('axis-label'))) pushHistory(); };
@@ -420,9 +438,7 @@ function init() {
 
 function scheduleCodeUpdate() {
     clearTimeout(codeUpdateTimer);
-    codeUpdateTimer = setTimeout(() => {
-        updateCode();
-    }, 250); // Debounce code generation by 250ms
+    codeUpdateTimer = setTimeout(() => updateCode(), 250);
 }
 
 // --- Dashboard & Project Management ---
@@ -461,7 +477,7 @@ function renderDashboard() {
             btn.addEventListener('click', (e) => { 
                 e.stopPropagation(); dropdown.style.display = 'none';
                 if (btn.dataset.action === 'delete') deleteProject(p.id);
-                else if (btn.dataset.action === 'edit') editProjectInfo(p.id);
+                else if (btn.dataset.action === 'edit') openProjectModal(null, p.id);
             });
         });
         
@@ -469,40 +485,66 @@ function renderDashboard() {
     });
 }
 
-function openNewProjectModal(type) {
-    pendingProjectType = type;
-    document.getElementById('modal-title').innerText = `Create New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-    document.getElementById('proj-name-input').value = `Untitled ${type}`;
-    document.getElementById('proj-cat-input').value = type === 'terrain' ? 'Terrain' : 'Static Prop';
-    document.getElementById('proj-cat-input').dispatchEvent(new Event('change'));
-    document.getElementById('new-project-modal').classList.add('visible');
+function openProjectModal(type, editId = null) {
+    editingProjectId = editId;
+    if (editId) {
+        const p = getProjects().find(x => x.id === editId);
+        document.getElementById('modal-title').innerText = "Edit Project Info";
+        document.getElementById('proj-name-input').value = p.name;
+        document.getElementById('proj-cat-input').value = p.category || p.type;
+        document.getElementById('save-project-btn').innerText = "Save Changes";
+        if (p.category === 'Terrain') {
+            document.getElementById('terrain-dimensions').classList.remove('hidden');
+            const dim = p.terrainDims || {w:40,d:20,h:40,segs:40};
+            document.getElementById('ter-w-input').value = dim.w;
+            document.getElementById('ter-d-input').value = dim.d;
+            document.getElementById('ter-h-input').value = dim.h;
+            document.getElementById('ter-segs-input').value = dim.segs || 40;
+        } else {
+            document.getElementById('terrain-dimensions').classList.add('hidden');
+        }
+        document.getElementById('category-form-group').classList.remove('hidden');
+    } else {
+        pendingProjectType = type;
+        document.getElementById('modal-title').innerText = `Create New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+        document.getElementById('proj-name-input').value = `Untitled ${type}`;
+        document.getElementById('save-project-btn').innerText = "Create Project";
+        if (type === 'terrain') {
+            document.getElementById('proj-cat-input').value = 'Terrain';
+            document.getElementById('category-form-group').classList.add('hidden');
+            document.getElementById('terrain-dimensions').classList.remove('hidden');
+        } else {
+            document.getElementById('proj-cat-input').value = 'Static Prop';
+            document.getElementById('category-form-group').classList.remove('hidden');
+            document.getElementById('terrain-dimensions').classList.add('hidden');
+        }
+    }
+    document.getElementById('project-modal').classList.add('visible');
 }
 
-function handleCreateProject() {
-    const name = document.getElementById('proj-name-input').value || `Untitled ${pendingProjectType}`;
+function handleSaveProject() {
+    const name = document.getElementById('proj-name-input').value || `Untitled`;
     const category = document.getElementById('proj-cat-input').value;
     let dim = null;
     if (category === 'Terrain') {
-        dim = { w: parseInt(document.getElementById('ter-w-input').value), d: parseInt(document.getElementById('ter-d-input').value), h: parseInt(document.getElementById('ter-h-input').value) };
+        dim = { w: parseInt(document.getElementById('ter-w-input').value), d: parseInt(document.getElementById('ter-d-input').value), h: parseInt(document.getElementById('ter-h-input').value), segs: parseInt(document.getElementById('ter-segs-input').value) };
     }
-    document.getElementById('new-project-modal').classList.remove('visible');
+    document.getElementById('project-modal').classList.remove('visible');
     
-    const projects = getProjects();
-    const id = Date.now();
-    projects.push({ id, name, type: pendingProjectType, category, date: new Date().toLocaleDateString(), thumb: '', data: { meshes: [], groups: [] }, terrainDims: dim });
-    saveProjects(projects);
-    openProject(id, pendingProjectType, dim);
-}
-
-function editProjectInfo(id) {
-    const projects = getProjects();
-    const p = projects.find(x => x.id === id);
-    if (!p) return;
-    const newName = prompt("Enter new project name:", p.name);
-    if (newName) {
-        p.name = newName;
+    if (editingProjectId) {
+        let projects = getProjects();
+        const idx = projects.findIndex(p => p.id === editingProjectId);
+        projects[idx].name = name; projects[idx].category = category; 
+        if (dim) projects[idx].terrainDims = dim;
         saveProjects(projects);
+        editingProjectId = null;
         renderDashboard();
+    } else {
+        const projects = getProjects();
+        const id = Date.now();
+        projects.push({ id, name, type: pendingProjectType, category, date: new Date().toLocaleDateString(), thumb: '', data: { meshes: [], groups: [] }, terrainDims: dim });
+        saveProjects(projects);
+        openProject(id, pendingProjectType, dim);
     }
 }
 
@@ -529,6 +571,7 @@ function openProject(id, forceType = null, forceDim = null) {
     }
     
     restoreScene(p.data);
+    // Prevent duplicate terrain spawns
     if (currentProjectType === 'terrain' && meshes.filter(m => m.userData.shapeType === 'terrain').length === 0) addTerrain(p.terrainDims);
     pushHistory();
     onWindowResize();
@@ -656,7 +699,7 @@ function serializeScene() {
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     return { 
-        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null, terDim: m.userData.terDim || null })), 
+        meshes: allMeshes.map(m => ({ type: m.userData.shapeType, detail: m.userData.detail, rockAmount: m.userData.rockAmount, rockPoints: m.userData.rockPoints ? m.userData.rockPoints.map(p => [p.x, p.y, p.z]) : null, color: '#' + m.material.color.getHexString(), roughness: m.material.roughness, metalness: m.material.metalness, wireframe: m.material.wireframe, isGrouped: m.userData.isGrouped, position: m.position.toArray(), rotation: m.rotation.toArray(), scale: m.scale.toArray(), terData: m.userData.terData || null, terDim: m.userData.terDim || null, label: m.userData.label || null })), 
         groups: groups.filter(g => g.children.length > 0).map(g => ({ children: g.children.map(c => allMeshes.indexOf(c)), position: g.position.toArray(), rotation: g.rotation.toArray(), scale: g.scale.toArray() })) 
     }; 
 }
@@ -672,8 +715,8 @@ function restoreScene(state) {
         let geo;
         if (mData.type === 'terrain') {
             const t = mData.terData || { height: 2, rough: 1, flow: 0 };
-            const dim = mData.terDim || { w: 40, d: 20, h: 40 };
-            geo = createTerrainGeometry(t.height, t.rough, t.flow, dim.w, dim.d, dim.h).geo;
+            const dim = mData.terDim || { w: 40, d: 20, h: 40, segs: 40 };
+            geo = createTerrainGeometry(t.height, t.rough, t.flow, dim.w, dim.d, dim.h, dim.segs || 40).geo;
         } else if (mData.type === 'plane') {
             geo = new THREE.PlaneGeometry(1, 1, mData.detail, mData.detail);
         } else if (mData.rockAmount > 0 && mData.rockPoints) { 
@@ -684,7 +727,7 @@ function restoreScene(state) {
         const mat = new THREE.MeshStandardMaterial({ color: mData.color, roughness: mData.roughness, metalness: mData.metalness, wireframe: mData.wireframe, side: mData.type === 'plane' ? THREE.DoubleSide : THREE.FrontSide });
         const m = new THREE.Mesh(geo, mat);
         m.position.fromArray(mData.position); m.rotation.fromArray(mData.rotation); m.scale.fromArray(mData.scale);
-        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null, terDim: mData.terDim || null };
+        m.userData = { shapeType: mData.type, detail: mData.detail, rockAmount: mData.rockAmount, isGrouped: mData.isGrouped, rockPoints: mData.rockPoints ? mData.rockPoints.map(p => new THREE.Vector3(p[0], p[1], p[2])) : null, terData: mData.terData || null, terDim: mData.terDim || null, label: mData.label || null };
         tempMeshes.push(m);
     });
 
@@ -699,17 +742,17 @@ function addShape(type) {
     const material = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 1, metalness: 0, side: type === 'plane' ? THREE.DoubleSide : THREE.FrontSide }); 
     const mesh = new THREE.Mesh(createGeometry(type, 32), material); 
     mesh.position.y = 0.5; 
-    mesh.userData = { shapeType: type, detail: 32, rockAmount: 0, isGrouped: false, rockPoints: null, terData: null }; 
+    mesh.userData = { shapeType: type, detail: 32, rockAmount: 0, isGrouped: false, rockPoints: null, terData: null, label: null }; 
     scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode(); 
 }
 
-function addTerrain(dim = {w: 40, d: 20, h: 40}) {
+function addTerrain(dim = {w: 40, d: 20, h: 40, segs: 40}) {
     const tData = { height: 2, rough: 0.5, flow: 0.5 };
-    const { geo, points } = createTerrainGeometry(tData.height, tData.rough, tData.flow, dim.w, dim.d, dim.h);
+    const { geo, points } = createTerrainGeometry(tData.height, tData.rough, tData.flow, dim.w, dim.d, dim.h, dim.segs);
     const mat = new THREE.MeshStandardMaterial({ color: 0x4a7c2e, roughness: 1, metalness: 0 });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.y = -dim.d/2; 
-    mesh.userData = { shapeType: 'terrain', detail: 32, rockAmount: 0, isGrouped: false, rockPoints: points, terData: tData, terDim: dim };
+    mesh.userData = { shapeType: 'terrain', detail: dim.segs, rockAmount: 0, isGrouped: false, rockPoints: points, terData: tData, terDim: dim, label: null };
     scene.add(mesh); meshes.push(mesh); selectObject(mesh); pushHistory(); updateCode();
 }
 
@@ -718,30 +761,20 @@ function hash(x, y) {
     h = (h ^ (h >> 13)) * 1274126177;
     return ((h ^ (h >> 16)) >>> 0) / 4294967295;
 }
-
 function smoothNoise(x, y) {
-    const xi = Math.floor(x);
-    const yi = Math.floor(y);
-    const xf = x - xi;
-    const yf = y - yi;
-    const a = hash(xi, yi);
-    const b = hash(xi + 1, yi);
-    const c = hash(xi, yi + 1);
-    const d = hash(xi + 1, yi + 1);
-    const u = xf * xf * (3 - 2 * xf);
-    const v = yf * yf * (3 - 2 * yf);
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
     return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
 }
 
-function createTerrainGeometry(height, rough, jagged, sizeX, depth, sizeZ) {
-    const w = sizeX || 40, d = depth || 20, h = sizeZ || 40;
-    const segs = Math.min(Math.floor(w/2), 40); // Optimize segments
-    const geo = new THREE.BoxGeometry(w, d, h, segs, 1, segs);
+function createTerrainGeometry(height, rough, jagged, sizeX, depth, sizeZ, segs) {
+    const w = sizeX || 40, d = depth || 20, h = sizeZ || 40, s = Math.min(segs || 40, 80);
+    const geo = new THREE.BoxGeometry(w, d, h, s, 1, s);
     const pos = geo.attributes.position;
     const points = [];
     for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        const z = pos.getZ(i);
+        const x = pos.getX(i), z = pos.getZ(i);
         if (pos.getY(i) > 0) { 
             let y = smoothNoise(x * rough, z * rough) * height * 2 - height;
             y += (smoothNoise(x * rough * 3, z * rough * 3) - 0.5) * height * 0.5; 
@@ -755,16 +788,15 @@ function createTerrainGeometry(height, rough, jagged, sizeX, depth, sizeZ) {
 }
 
 function updateTerrain() {
-    if (!selectedMesh || selectedMesh.userData.shapeType !== 'terrain') return;
+    const ter = meshes.find(m => m.userData.shapeType === 'terrain');
+    if (!ter) return;
     const h = parseFloat(document.getElementById('ter-height').value);
     const r = parseFloat(document.getElementById('ter-rough').value);
     const j = parseFloat(document.getElementById('ter-flow').value); 
-    selectedMesh.userData.terData = { height: h, rough: r, flow: j };
-    const dim = selectedMesh.userData.terDim;
-    const { geo, points } = createTerrainGeometry(h, r, j, dim.w, dim.d, dim.h);
-    selectedMesh.geometry.dispose();
-    selectedMesh.geometry = geo;
-    selectedMesh.userData.rockPoints = points;
+    ter.userData.terData = { height: h, rough: r, flow: j };
+    const dim = ter.userData.terDim;
+    const { geo, points } = createTerrainGeometry(h, r, j, dim.w, dim.d, dim.h, dim.segs);
+    ter.geometry.dispose(); ter.geometry = geo; ter.userData.rockPoints = points;
     scheduleCodeUpdate();
 }
 
@@ -839,12 +871,8 @@ function ungroupSelected() { if (!selectedMesh || !groups.includes(selectedMesh)
 function deleteSelected() { if (!selectedMesh) return; if (groups.includes(selectedMesh)) { selectedMesh.children.forEach(child => { scene.remove(child); child.geometry.dispose(); child.material.dispose(); }); scene.remove(selectedMesh); groups = groups.filter(g => g !== selectedMesh); } else if (meshes.includes(selectedMesh)) { scene.remove(selectedMesh); selectedMesh.geometry.dispose(); selectedMesh.material.dispose(); meshes = meshes.filter(m => m !== selectedMesh); } transformControls.detach(); selectedMesh = null; document.getElementById('props-panel').classList.add('hidden'); document.getElementById('transform-panel').classList.add('hidden'); pushHistory(); updateCode(); }
 function setMode(mode) { 
     currentMode = mode;
-    if (mode === 'sculpt') {
-        transformControls.detach();
-        orbitControls.enabled = true;
-    } else {
-        if(selectedMesh) transformControls.attach(selectedMesh);
-    }
+    if (mode === 'sculpt') { transformControls.detach(); orbitControls.enabled = true; } 
+    else { if(selectedMesh) transformControls.attach(selectedMesh); }
     document.querySelectorAll('#transform-modes .btn').forEach(btn => btn.classList.remove('active')); 
     document.getElementById(`btn-${mode}`).classList.add('active'); 
 }
@@ -857,15 +885,19 @@ function selectObject(obj) {
     document.getElementById('prop-detail').classList.add('hidden');
     document.getElementById('prop-rock').classList.add('hidden');
     document.getElementById('prop-terrain').classList.add('hidden');
+    document.getElementById('prop-label').classList.add('hidden');
 
     if (meshes.includes(obj)) { 
         document.getElementById('props-panel').classList.remove('hidden');
+        document.getElementById('prop-label').classList.remove('hidden');
+        document.getElementById('part-label-input').value = obj.userData.label || '';
         const color = obj.material.color.getHSL({}); 
         document.getElementById('hue-slider').value = color.h * 360; document.getElementById('sat-slider').value = color.s * 100; document.getElementById('light-slider').value = color.l * 100; updateColor(); 
         
         if (obj.userData.shapeType === 'terrain') {
             document.getElementById('prop-color').classList.remove('hidden');
             document.getElementById('prop-terrain').classList.remove('hidden');
+            document.getElementById('prop-label').classList.add('hidden'); // Terrain doesn't need limb labels
             const t = obj.userData.terData;
             document.getElementById('ter-height').value = t.height;
             document.getElementById('ter-rough').value = t.rough;
@@ -878,7 +910,6 @@ function selectObject(obj) {
             document.getElementById('noise-slider').value = obj.userData.rockAmount;
         }
     } else { 
-        // If it's a group, ensure props panel is hidden but transform panel stays
         document.getElementById('props-panel').classList.add('hidden'); 
     } 
 }
@@ -886,25 +917,37 @@ function deselectObject() { selectedMesh = null; transformControls.detach(); doc
 function toggleCodePanel() { document.getElementById('code-panel').classList.toggle('visible'); onWindowResize(); }
 function copyCode() { const ct = document.getElementById('code-output'); ct.select(); document.execCommand('copy'); const b = document.querySelector('#code-header .btn span'); b.innerText='Copied!'; setTimeout(()=>b.innerText='Copy',1500); }
 function focusCamera() { if (meshes.length === 0 && groups.length === 0) { camera.position.set(10, 8, 10); orbitControls.target.set(0, 0, 0); orbitControls.update(); return; } const box = new THREE.Box3(); [...meshes, ...groups].forEach(obj => box.expandByObject(obj)); const center = box.getCenter(new THREE.Vector3()); const size = box.getSize(new THREE.Vector3()); const maxDim = Math.max(size.x, size.y, size.z); const fov = camera.fov * (Math.PI / 180); let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)); cameraZ *= 1.8; camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ); orbitControls.target.set(center.x, center.y, center.z); orbitControls.update(); }
-function exportScene() { const dataStr = JSON.stringify(serializeScene(), null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "ai_model_scene.json"; a.click(); URL.revokeObjectURL(url); }
-function importScene(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { restoreScene(JSON.parse(e.target.result)); pushHistory(); } catch (err) { alert("Invalid file"); } }; reader.readAsText(file); event.target.value = ""; }
-function toggleFullscreen() { 
-    if (!document.fullscreenElement) { 
-        document.documentElement.requestFullscreen().then(() => setTimeout(onWindowResize, 200)); 
-    } else { 
-        document.exitFullscreen().then(() => setTimeout(onWindowResize, 200)); 
-    } 
+function downloadFile(content, fileName, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById('export-modal').classList.remove('visible');
 }
+function exportGLB() {
+    const exporter = new GLTFExporter();
+    const exportGroup = new THREE.Group();
+    [...meshes, ...groups].forEach(m => exportGroup.attach(m.clone()));
+    exporter.parse(exportGroup, (result) => {
+        const blob = new Blob([result], { type: 'model/gltf-binary' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'project.glb'; a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById('export-modal').classList.remove('visible');
+    }, () => alert('GLB Export failed'), { binary: true });
+}
+function importScene(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { restoreScene(JSON.parse(e.target.result)); pushHistory(); } catch (err) { alert("Invalid file"); } }; reader.readAsText(file); event.target.value = ""; }
+function toggleFullscreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().then(() => setTimeout(onWindowResize, 200)); } else { document.exitFullscreen().then(() => setTimeout(onWindowResize, 200)); } }
 
 function updateCode() {
-    let code = `// Three.js Model Code\n// Generated by AI Model Builder\n`;
+    let code = `// Three.js Model Code\n// Generated by 3D Game Asset Builder\n`;
     code += `import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';\n`;
     code += `const V=(a)=>{let r=[];for(let i=0;i<a.length;i+=3)r.push(new THREE.Vector3(a[i],a[i+1],a[i+2]));return r;}\n\n`;
     if (meshes.length === 0 && groups.length === 0) { code += `// No objects created yet.`; document.getElementById('code-output').value = code; return; }
     const allMeshes = [...meshes];
     groups.forEach(g => g.children.forEach(c => allMeshes.push(c)));
     const geoCache = {}; const matCache = {}; let meshCode = "";
-    allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
+    allMeshes.forEach((m, i) => { const { geoVar, matVar } = getCacheVars(m, i, geoCache, matCache); const p = m.position, r = m.rotation, s = m.scale; meshCode += `const mesh_${i} = new THREE.Mesh(${geoVar}, ${matVar});\n`; if(m.userData.label) meshCode += `mesh_${i}.name = "${m.userData.label}"; // Part Label for AI\n`; meshCode += `mesh_${i}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; meshCode += `mesh_${i}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; meshCode += `mesh_${i}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n\n`; });
     let groupCode = "";
     if (meshes.length > 0) { groupCode += `const auto_group = new THREE.Group();\n`; groupCode += `auto_group.add(${meshes.map(m => `mesh_${allMeshes.indexOf(m)}`).join(",")});\n`; groupCode += `scene.add(auto_group);\n\n`; }
     groups.forEach((g, gi) => { if (g.children.length === 0) return; groupCode += `const group_${gi} = new THREE.Group();\n`; groupCode += `group_${gi}.add(${g.children.map(c => `mesh_${allMeshes.indexOf(c)}`).join(",")});\n`; const p = g.position, r = g.rotation, s = g.scale; groupCode += `group_${gi}.position.set(${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)});\n`; groupCode += `group_${gi}.rotation.set(${r.x.toFixed(2)},${r.y.toFixed(2)},${r.z.toFixed(2)});\n`; groupCode += `group_${gi}.scale.set(${s.x.toFixed(2)},${s.y.toFixed(2)},${s.z.toFixed(2)});\n`; groupCode += `scene.add(group_${gi});\n\n`; });
@@ -919,9 +962,9 @@ function getCacheVars(mesh, index, geoCache, matCache) {
         if (!geoCache[geoSig]) {
             geoVar = `geo_terrain`;
             const yPts = mesh.userData.rockPoints.map(p => p.y.toFixed(2)).join(",");
-            const dim = mesh.userData.terDim || {w:40,d:20,h:40};
-            const segs = Math.min(Math.floor(dim.w/2), 40);
-            geoCode = `const ${geoVar} = new THREE.BoxGeometry(${dim.w},${dim.d},${dim.h},${segs},1,${segs});\nconst pos_${geoVar} = ${geoVar}.attributes.position;\nconst y_arr = [${yPts}];\nfor(let i=0; i<pos_${geoVar}.count; i++) pos_${geoVar}.setY(i, y_arr[i]);\n${geoVar}.computeVertexNormals();\n`;
+            const dim = mesh.userData.terDim || {w:40,d:20,h:40,segs:40};
+            const s = dim.segs || 40;
+            geoCode = `const ${geoVar} = new THREE.BoxGeometry(${dim.w},${dim.d},${dim.h},${s},1,${s});\nconst pos_${geoVar} = ${geoVar}.attributes.position;\nconst y_arr = [${yPts}];\nfor(let i=0; i<pos_${geoVar}.count; i++) pos_${geoVar}.setY(i, y_arr[i]);\n${geoVar}.computeVertexNormals();\n`;
             geoCache[geoSig] = { var: geoVar, code: geoCode };
         }
     } else if (mesh.userData.rockAmount > 0 && mesh.userData.rockPoints) {
